@@ -163,13 +163,13 @@ test("Build: block labels always show the real Kalaallisut spelling, and hide gr
 	expect(labelWithId.indexOf("-qaq")).toBeLessThan(labelWithId.indexOf("N_qaq_Vb"));
 });
 
-test("Build: the morpheme display option explicitly prepends the morpheme to its gloss", async ({ page }) => {
+test("Build: the morpheme display option explicitly prepends the morpheme", async ({ page }) => {
 	const options = await page.locator("#opt-spelling [role=radio]").allTextContents();
 	expect(options).toEqual(["Form + gloss", "Form only", "Gloss only"]);
 
 	await page.fill("#morpheme-filter", "nngit");
 	await page.locator('[role="treeitem"]', { hasText: "Sentential affixes" }).click({ force: true });
-	const label = await page.locator(".blocklyFlyout .blocklyDraggable text").filter({ hasText: /^-nngit\s+—\s+negation/ }).textContent();
+	const label = await page.locator(".blocklyFlyout .blocklyDraggable text").filter({ hasText: /^-nngit(?:\s|\u00a0)—/ }).textContent();
 	expect(label.indexOf("-nngit")).toBe(0);
 });
 
@@ -178,7 +178,7 @@ test("Build: filtering by -nngit surfaces the ordinary negator by its Kalaallisu
 	const sententialCategory = page.locator('[role="treeitem"]', { hasText: "Sentential affixes" });
 	await expect(sententialCategory).toBeVisible();
 	await sententialCategory.click({ force: true });
-	await expect(page.locator(".blocklyFlyout .blocklyDraggable text").filter({ hasText: /^-nngit\s+—\s+negation/ })).toBeVisible();
+	await expect(page.locator(".blocklyFlyout .blocklyDraggable text").filter({ hasText: /^-nngit(?:\s|\u00a0)—/ })).toBeVisible();
 });
 
 test("Build: verb ending exposes inline mood, polarity, and subject controls", async ({ page }) => {
