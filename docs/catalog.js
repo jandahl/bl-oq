@@ -9,7 +9,10 @@ import { mergeMorphemeSources, GRAMMAR_MORPHEMES_URL } from "./oq-api.js";
  * @returns {Promise<{ presets: any[], authoritative: boolean|undefined, meta: any }>}
  */
 export async function loadCatalog() {
-	const res = await fetch(GRAMMAR_MORPHEMES_URL);
+	// Revalidate the live catalog so a Pages/CDN cached response cannot hide a
+	// newly published grammarian export. Unchanged bytes remain cacheable via
+	// the server's validators; only a changed catalog is downloaded.
+	const res = await fetch(GRAMMAR_MORPHEMES_URL, { cache: "no-cache" });
 	if (!res.ok) throw new Error(`morpheme catalog fetch failed: ${res.status}`);
 	const value = await res.json();
 	const { presets, anyOk, failed } = mergeMorphemeSources(
