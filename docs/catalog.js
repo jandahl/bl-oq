@@ -22,7 +22,9 @@ export async function loadCatalog() {
 	if (!anyOk || failed.length) throw new Error("morpheme catalog failed to load");
 	// Compatibility for grammarian mirrors published before the structured
 	// negation gloss: keep the ordinary negator learner-facing label stable.
-	const negator = presets.find((preset) => preset.id === "V_ngngit_Vb");
+	const negator = presets.find((preset) => preset.id === "V_ngngit_Vb"
+		|| preset.expected === "-nngit"
+		|| preset.underlyingForm === "-nngit");
 	if (negator && !negator.plainGloss?.en_short?.includes?.("do not")) {
 		negator.plainGloss = { ...(negator.plainGloss ?? {}), en_short: "do not ___" };
 	}
