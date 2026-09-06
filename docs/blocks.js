@@ -75,6 +75,12 @@ const VERB_MOOD_CONNECTION_TYPE = "VERB_MOOD";
 const VERB_SUBJECT_CONNECTION_TYPE = "VERB_SUBJECT";
 const INFLECTION_BLOCK_STYLE = "oq_inflectional_blocks";
 const UI_INDENT = "\u00a0\u00a0\u00a0\u00a0";
+const NOUN_PRESENTATION_OPTIONS = [
+	["singular · indefinite", "singular|indefinite"],
+	["singular · definite", "singular|definite"],
+	["plural · indefinite", "plural|indefinite"],
+	["plural · definite", "plural|definite"],
+];
 
 // grammarian's lexical_facts.morpheme_type enum (verified against the live
 // published catalog — see README's "Morpheme catalog" note). Order here is
@@ -214,6 +220,11 @@ export function defineMorphemeBlocks() {
 			init() {
 				this.appendDummyInput()
 					.appendField(new Blockly.FieldLabelSerializable(""), "LABEL");
+				if (cat.id === "stem_n") {
+					this.appendDummyInput("PRESENTATION")
+						.appendField("translation")
+						.appendField(new Blockly.FieldDropdown(NOUN_PRESENTATION_OPTIONS), "PRESENTATION");
+				}
 				this.setPreviousStatement(
 					cat.hasPrevious === false ? WORD_START_CONNECTION_TYPE : CONNECTION_TYPE,
 				);

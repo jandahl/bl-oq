@@ -78,6 +78,9 @@ export function buildBlocklyThemes() {
 		scrollbarColour: "#c9c2b0",
 		insertionMarkerColour: "#2a6f6f",
 		insertionMarkerOpacity: 0.3,
+		dropdownBackgroundColour: "#ffffff",
+		dropdownBorderColour: "#c9c2b0",
+		dropdownFocusedItemColour: "#e5dfd1",
 	};
 	const darkStyles = {
 		workspaceBackgroundColour: "#1f2224",
@@ -89,6 +92,9 @@ export function buildBlocklyThemes() {
 		scrollbarColour: "#5fb8b8",
 		insertionMarkerColour: "#5fb8b8",
 		insertionMarkerOpacity: 0.3,
+		dropdownBackgroundColour: "#26292b",
+		dropdownBorderColour: "#5b6468",
+		dropdownFocusedItemColour: "#3a4549",
 	};
 
 	const classic = {

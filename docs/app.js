@@ -213,8 +213,18 @@ function updateReadingLine(seq) {
 		readingLine.hidden = true;
 		return;
 	}
-	readingLine.textContent = composedTranslation(glossSummaryItems(seq, { lang: displayOptions().lang }));
+	const presentationPreferences = nounPresentationPreferences();
+	readingLine.textContent = composedTranslation(glossSummaryItems(seq, {
+		lang: displayOptions().lang,
+		...presentationPreferences,
+	}));
 	readingLine.hidden = false;
+}
+
+function nounPresentationPreferences() {
+	const noun = workspace?.getAllBlocks(false).find((block) => block.type === "morpheme_block__stem_n");
+	const [numberPreference, determinationPreference] = (noun?.getFieldValue("PRESENTATION") ?? "singular|indefinite").split("|");
+	return { numberPreference, determinationPreference };
 }
 
 // --- Theme (bl-oq-ly#7): a real toggle, not just following the OS. Cycles
@@ -470,7 +480,7 @@ function rerenderBreakdown() {
 	// leave the learner's fold state alone, or collapsing it is a no-op.
 	const firstShow = breakdownDetails.hidden;
 	breakdownDetails.hidden = false;
-	if (firstShow) breakdownDetails.open = window.innerWidth >= 640;
+	if (firstShow) breakdownDetails.open = false;
 }
 
 async function runDeconstruct({ skipCanvas = false } = {}) {
@@ -480,7 +490,6 @@ async function runDeconstruct({ skipCanvas = false } = {}) {
 	if (!word) return;
 	deconstructAbort = new AbortController();
 	breakdownDiv.innerHTML = "";
-	breakdownDetails.hidden = true;
 	setStatus(`Analyzing "${word}"…`, "");
 	lastDeconstructIds = null;
 	lastDeconstructSeq = null;
@@ -489,6 +498,8 @@ async function runDeconstruct({ skipCanvas = false } = {}) {
 		const result = await analyzeWordAsync(word, presets, {}, { signal: deconstructAbort.signal });
 		if (run !== deconstructRun) return;
 		if (!result.matches || result.matches.length === 0) {
+			breakdownSummaryMeta.textContent = "No verified breakdown";
+			breakdownDetails.hidden = false;
 			setStatus(`No verified breakdown found for "${word}".`, "error", `${result.evalCount} candidates checked`);
 			return;
 		}
