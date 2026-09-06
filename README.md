@@ -268,7 +268,7 @@ concern that belongs in oq) as Blockly connection checks.
   browser at all — `oq-api.js` imports the published package entry point
   `https://jandahl.github.io/oq-api/api/v0.1-latest/public-api.js`. The package
   path is `v0.1-latest`; the module's separate `API_VERSION` currently reports
-  `0.1.0`. Treat a broken build as a cue to inspect
+  `0.1.3`. Treat a broken build as a cue to inspect
   the published package contract and its upstream data source, not
   necessarily as a bug in this repo.
 - **Morpheme catalog**: fetched at runtime from oq's own

@@ -1,6 +1,6 @@
 // Regression: Build and Deconstruct used to be exclusive tabs, so switching
 // one wiped the other. They now share one workspace: a successful analysis
-// opens a collapsing details panel AND drops the verified chain on the
+// shows a collapsing details panel AND drops the verified chain on the
 // canvas. Both must remain.
 import { test, expect } from "@playwright/test";
 
@@ -26,7 +26,7 @@ test("collapsing the analysis details does not wipe the Build canvas", async ({ 
 	await page.getByRole("button", { name: "qimmeqarpunga", exact: true }).click();
 	await expect(page.locator("#primary-breakdown .breakdown-word")).toHaveText("qimmeqarpunga", { timeout: 20_000 });
 	await expect(page.locator("#status-line")).toHaveText("qimmeqarpunga");
-	await expect(page.locator("#breakdown-details")).toHaveAttribute("open", "");
+	await expect(page.locator("#breakdown-details")).not.toHaveAttribute("open");
 
 	await page.locator("#breakdown-summary").click();
 	await expect(page.locator("#breakdown-details")).not.toHaveAttribute("open");
@@ -47,6 +47,7 @@ test("collapsing the analysis details does not wipe the Build canvas", async ({ 
 test("a collapsed analysis stays collapsed when display options change", async ({ page }) => {
 	await page.getByRole("button", { name: "qimmeqarpunga", exact: true }).click();
 	await expect(page.locator("#primary-breakdown .breakdown-word")).toHaveText("qimmeqarpunga", { timeout: 20_000 });
+	await expect(page.locator("#breakdown-details")).not.toHaveAttribute("open");
 	await page.locator("#breakdown-summary").click();
 	await expect(page.locator("#breakdown-details")).not.toHaveAttribute("open");
 

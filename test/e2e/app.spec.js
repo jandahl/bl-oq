@@ -468,6 +468,7 @@ test("Deconstruct: lower-ranked verified breakdowns are folded and link to their
 	await page.fill("#word-input", "qimmeqarpunga");
 	await page.click("#analyze-btn");
 	await expect(page.locator("#primary-breakdown .breakdown-word")).toHaveText("qimmeqarpunga", { timeout: 15_000 });
+	await page.locator("#breakdown-summary").click();
 	const alternatives = page.locator("#alternative-breakdowns");
 	await expect(alternatives).toBeVisible();
 	await expect(alternatives).not.toHaveAttribute("open", "");
