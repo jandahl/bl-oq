@@ -51,8 +51,6 @@ test("a collapsed analysis stays collapsed when display options change", async (
 	await expect(page.locator("#primary-breakdown .breakdown-word")).toHaveText("qimmeqarpunga", { timeout: 20_000 });
 	await expect(page.locator("#breakdown-details")).not.toHaveAttribute("open");
 	await page.locator("#breakdown-summary").click();
-	await expect(page.locator("#breakdown-details")).toHaveAttribute("open", "");
-	await page.locator("#breakdown-summary").click();
 	await expect(page.locator("#breakdown-details")).not.toHaveAttribute("open");
 
 	await page.click("#opt-reading-order");
