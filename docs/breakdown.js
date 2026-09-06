@@ -31,13 +31,31 @@ export function renderBreakdown(container, word, seq, buildResult, glossSummaryI
 	heading.textContent = (buildResult.approximate ? "≈ " : "") + buildResult.word;
 	container.appendChild(heading);
 
-	const allItems = glossSummaryItems(seq, { lang: opts.lang });
+	const presentationPreferences = opts.presentationPreferences ?? { numberPreference: "singular", determinationPreference: "indefinite" };
+	const allItems = glossSummaryItems(seq, { lang: opts.lang, ...presentationPreferences });
 	const translation = composedTranslation(allItems);
 	if (translation) {
 		const translationEl = document.createElement("p");
 		translationEl.className = "breakdown-translation";
 		translationEl.textContent = translation;
 		container.appendChild(translationEl);
+	}
+	const variants = allItems.find((item) => item.presentationVariants)?.presentationVariants;
+	if (variants) {
+		const controls = document.createElement("div");
+		controls.className = "presentation-variant-controls";
+		const values = variants[opts.lang ?? "en"] ?? variants.en ?? variants.da;
+		for (const [numberPreference, determinationPreference, label] of [["singular", "indefinite", "sg · indef"], ["singular", "definite", "sg · def"], ["plural", "indefinite", "pl · indef"], ["plural", "definite", "pl · def"]]) {
+			const value = values?.[numberPreference]?.[determinationPreference];
+			if (!value) continue;
+			const button = document.createElement("button");
+			button.type = "button";
+			button.textContent = `${label}: ${value}`;
+			button.className = numberPreference === presentationPreferences.numberPreference && determinationPreference === presentationPreferences.determinationPreference ? "is-active" : "";
+			button.addEventListener("click", () => renderBreakdown(container, word, seq, buildResult, glossSummaryItems, { ...opts, presentationPreferences: { numberPreference, determinationPreference } }));
+			controls.appendChild(button);
+		}
+		container.appendChild(controls);
 	}
 
 	let items = allItems.filter((item) => item.marker !== "Ø");
