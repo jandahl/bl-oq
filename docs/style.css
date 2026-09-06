@@ -370,6 +370,10 @@ main {
 	color: var(--accent);
 }
 
+.presentation-variant-controls { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 1rem; }
+.presentation-variant-controls button { border: 1px solid var(--accent); border-radius: 999px; background: transparent; color: inherit; padding: .25rem .6rem; cursor: pointer; }
+.presentation-variant-controls button.is-active { background: var(--accent); color: var(--accent-contrast, #fff); }
+
 .breakdown-rows {
 	display: flex;
 	flex-direction: column;
@@ -516,4 +520,3 @@ footer {
 	color: color-mix(in srgb, var(--fg) 55%, transparent);
 }
 footer a { color: var(--accent); }
-
