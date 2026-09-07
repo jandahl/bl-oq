@@ -10,6 +10,7 @@ import { buildBlocklyThemes } from "./theme.js";
 import { composedTranslation } from "./gloss.js";
 import { readState, writeState } from "./router.js";
 import { loadWorkedExamples } from "./worked-examples.js";
+import { setLocale, applyLocale } from "./i18n.js";
 
 /** Radiogroup of [role=radio][data-value] buttons that behaves like a <select>
  *  (.value getter/setter + change events) so displayOptions() stays unchanged. */
@@ -89,6 +90,7 @@ const workedExamplesList = document.getElementById("worked-examples-list");
 const showIdsCheckbox = document.getElementById("opt-show-ids");
 const readingOrderCheckbox = document.getElementById("opt-reading-order");
 const langSelect = enhanceSegmented(document.getElementById("opt-lang"));
+const uiLangSelect = enhanceSegmented(document.getElementById("opt-ui-lang"));
 const spellingSelect = enhanceSegmented(document.getElementById("opt-spelling"));
 const readingLine = document.getElementById("reading-line");
 
@@ -123,6 +125,8 @@ const SPELLING_KEY = "bl-oq-ly:spelling-mode";
 function displayOptions() {
 	return { showIds: showIdsCheckbox.checked, lang: langSelect.value, spellingMode: spellingSelect.value };
 }
+
+function glossOptions() { const lang = displayOptions().lang; return { lang: lang === "both" ? "en" : lang, showOther: lang === "both" }; }
 
 function selectExample(word) {
 	setFieldValue(wordInput, word);
@@ -161,9 +165,10 @@ function readLastFirst() {
 }
 
 function initDisplayOptions() {
+	uiLangSelect.value = localStorage.getItem("bl-oq-ly:ui-lang") === "da" ? "da" : "en";
 	showIdsCheckbox.checked = localStorage.getItem(SHOW_IDS_KEY) === "true";
 	readingOrderCheckbox.checked = localStorage.getItem(READING_ORDER_KEY) !== "false"; // default on
-	langSelect.value = localStorage.getItem(LANG_KEY) === "da" ? "da" : "en";
+	langSelect.value = ["en", "da", "both"].includes(localStorage.getItem(LANG_KEY)) ? localStorage.getItem(LANG_KEY) : "en";
 	spellingSelect.value = ["both", "spelling-only", "gloss-only"].includes(localStorage.getItem(SPELLING_KEY))
 		? localStorage.getItem(SPELLING_KEY) : "both";
 
@@ -173,6 +178,11 @@ function initDisplayOptions() {
 		refreshBuild();
 		if (lastDeconstructIds) rerenderBreakdown();
 	}
+	uiLangSelect.addEventListener("change", () => {
+		localStorage.setItem("bl-oq-ly:ui-lang", uiLangSelect.value);
+		setLocale(uiLangSelect.value);
+		applyLocale();
+	});
 	showIdsCheckbox.addEventListener("change", () => {
 		localStorage.setItem(SHOW_IDS_KEY, String(showIdsCheckbox.checked));
 		onDisplayOptionChange();
@@ -192,6 +202,9 @@ function initDisplayOptions() {
 		if (lastDeconstructIds) rerenderBreakdown();
 	});
 }
+
+setLocale(localStorage.getItem("bl-oq-ly:ui-lang") || "en");
+applyLocale();
 
 /**
  * Shows the same composed, full-sentence translation Deconstruct does (e.g.
@@ -215,7 +228,7 @@ function updateReadingLine(seq) {
 	}
 	const presentationPreferences = nounPresentationPreferences();
 	readingLine.textContent = composedTranslation(glossSummaryItems(seq, {
-		lang: displayOptions().lang,
+		...glossOptions(),
 		...presentationPreferences,
 	}));
 	readingLine.hidden = false;
@@ -463,13 +476,13 @@ function rerenderBreakdown() {
 	primary.id = "primary-breakdown";
 	renderBreakdown(primary, lastDeconstructWord, lastDeconstructSeq, lastDeconstructBuilt, glossSummaryItems, {
 		reverseOrder: readLastFirst(),
-		lang: displayOptions().lang,
+		...glossOptions(),
 	});
 	breakdownDiv.appendChild(primary);
 	renderAlternativeBreakdowns(breakdownDiv, lastDeconstructAlternatives, glossSummaryItems, {
 		word: lastDeconstructWord,
 		reverseOrder: readLastFirst(),
-		lang: displayOptions().lang,
+		...glossOptions(),
 		builderHref: (seq) => `${location.pathname}${writeState({ chain: seq.map((item) => item.id).filter(Boolean) })}`,
 	});
 	const n = primary.querySelectorAll(".breakdown-row").length;

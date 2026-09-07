@@ -148,18 +148,23 @@ function plainStringGloss(value) {
 
 export function labelFor(preset, opts = {}) {
 	const { showIds = false, lang = "en", spellingMode = "both" } = opts;
+	const glossLang = lang === "both" ? "en" : lang;
 	const spelling = preset.expected || preset.id;
-	const moodLabel = preset.plainGloss?.[`${lang}_mood_label`];
+	const moodLabel = preset.plainGloss?.[`${glossLang}_mood_label`];
 	// Danish glosses aren't populated on every entry yet (grammarian's own
 	// rollout is ongoing) — fall back to English rather than show nothing.
-	const rawGloss = plainStringGloss(preset.plainGloss?.[`${lang}_short`])
-		?? (lang === "da" ? plainStringGloss(preset.plainGloss?.da) : null)
+	const rawGloss = plainStringGloss(preset.plainGloss?.[`${glossLang}_short`])
+		?? (glossLang === "da" ? plainStringGloss(preset.plainGloss?.da) : null)
 		?? preset.glossShort ?? preset.gloss ?? "(no gloss)";
 	const gloss = moodLabel && rawGloss.startsWith(`${moodLabel} — `) ? rawGloss.slice(moodLabel.length + 3) : rawGloss;
+	const otherGloss = lang === "both"
+		? plainStringGloss(preset.plainGloss?.da_short) ?? plainStringGloss(preset.plainGloss?.da)
+		: null;
+	const displayGloss = otherGloss && otherGloss !== gloss ? `${gloss} / ${otherGloss}` : gloss;
 
 	const core = spellingMode === "spelling-only" ? spelling
-		: spellingMode === "gloss-only" ? gloss
-			: `${spelling} — ${gloss}`;
+		: spellingMode === "gloss-only" ? displayGloss
+			: `${spelling} — ${displayGloss}`;
 	// The morpheme is the useful learner-facing identity, so keep its form at
 	// the start of the label whenever spellingMode includes it. Internal API
 	// ids are optional diagnostics and belong at the end; putting them first
