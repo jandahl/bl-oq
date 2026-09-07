@@ -279,11 +279,6 @@ const DISPLAY_MQ = window.matchMedia("(min-width: 720px)");
 
 function initDisplayChrome() {
 	function sync() {
-		if (DISPLAY_MQ.matches) {
-			displayPanel.classList.add("is-open");
-			displayToggleBtn.setAttribute("aria-expanded", "true");
-			return;
-		}
 		if (displayToggleBtn.dataset.userToggled === "true") return;
 		displayPanel.classList.remove("is-open");
 		displayToggleBtn.setAttribute("aria-expanded", "false");
@@ -294,10 +289,7 @@ function initDisplayChrome() {
 		displayToggleBtn.dataset.userToggled = "true";
 		displayToggleBtn.setAttribute("aria-expanded", String(open));
 	});
-	DISPLAY_MQ.addEventListener("change", () => {
-		if (!DISPLAY_MQ.matches) displayToggleBtn.dataset.userToggled = "";
-		sync();
-	});
+	DISPLAY_MQ.addEventListener("change", sync);
 	sync();
 }
 

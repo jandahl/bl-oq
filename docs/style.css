@@ -136,12 +136,9 @@ h1 { margin: 0 0 0.2rem; font-size: 1.2rem; }
 	align-items: center;
 }
 #display-panel[hidden] { display: none; }
-@media (min-width: 720px) {
-	#display-toggle { display: none !important; }
-}
-@media (max-width: 719px) {
-	#display-panel:not(.is-open) { display: none; }
-}
+#display-panel:not(.is-open) { display: none; }
+.gloss-language-bar { margin-top: 0.35rem; }
+.settings-panel { padding: 0.65rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
 .view-options label { display: flex; align-items: center; gap: 0.3rem; cursor: pointer; }
 .view-options input { cursor: pointer; }
 .option-cluster {

@@ -676,6 +676,19 @@ test("phone layout: display options collapse behind a toggle and the page does n
 	await expect(page.locator('#opt-lang [data-value="da"]')).toHaveAttribute("aria-checked", "true");
 });
 
+test("wide layout: gloss language stays in the compact bar and other options stay behind Settings", async ({ page }) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await page.reload();
+	await expect(page.locator("#status-line")).toContainText("Loaded", { timeout: 20_000 });
+	await expect(page.locator("#opt-lang")).toBeVisible();
+	await expect(page.locator("#display-toggle")).toBeVisible();
+	await expect(page.locator("#display-panel")).toBeHidden();
+	await expect(page.locator("#opt-reading-order")).toBeHidden();
+	await page.click("#display-toggle");
+	await expect(page.locator("#opt-reading-order")).toBeVisible();
+	await expect(page.locator("#opt-spelling")).toBeVisible();
+});
+
 test("Build: pinch-to-zoom is enabled on the workspace (bl-oq-ly#20 -- Blockly doesn't turn this on by default)", async ({ page }) => {
 	const pinchEnabled = await page.evaluate(() => Blockly.getMainWorkspace().options.zoomOptions.pinch);
 	expect(pinchEnabled).toBe(true);

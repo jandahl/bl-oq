@@ -12,7 +12,7 @@
 			<h1>bl-oq-ly</h1>
 			<div class="header-actions">
 				<button id="theme-toggle" class="theme-toggle" type="button">Theme: Auto</button>
-				<button id="display-toggle" class="theme-toggle" type="button" aria-controls="display-panel" aria-expanded="true">Display</button>
+				<button id="display-toggle" class="theme-toggle" type="button" aria-controls="display-panel" aria-expanded="false">Settings</button>
 			</div>
 		</div>
 		<p class="subtitle" data-i18n="subtitle">A block-based learning aid for building and taking apart Kalaallisut words. Prototype — nothing here is authoritative.</p>
@@ -24,9 +24,7 @@
 			</div>
 			<button id="analyze-btn" type="submit" data-i18n="deconstruct">Deconstruct</button>
 		</form>
-		<div class="view-options" id="display-panel">
-			<div class="option-cluster"><span id="ui-lang-label">UI language</span><div id="opt-ui-lang" class="segmented" role="radiogroup" aria-labelledby="ui-lang-label"><button type="button" role="radio" data-value="en" aria-checked="true">English</button><button type="button" role="radio" data-value="da" aria-checked="false">Dansk</button></div></div>
-			<label><input type="checkbox" id="opt-reading-order" checked /> <span data-i18n="readLast">Read last morpheme first</span></label>
+		<div class="view-options gloss-language-bar">
 			<div class="option-cluster">
 				<span id="opt-lang-label" data-i18n="glossLanguage">Gloss language</span>
 				<div id="opt-lang" class="segmented" role="radiogroup" aria-labelledby="opt-lang-label">
@@ -35,6 +33,10 @@
 					<button type="button" role="radio" data-value="both" aria-checked="false" data-i18n="both">Both</button>
 				</div>
 			</div>
+		</div>
+		<div class="view-options settings-panel" id="display-panel">
+			<div class="option-cluster"><span id="ui-lang-label">UI language</span><div id="opt-ui-lang" class="segmented" role="radiogroup" aria-labelledby="ui-lang-label"><button type="button" role="radio" data-value="en" aria-checked="true">English</button><button type="button" role="radio" data-value="da" aria-checked="false">Dansk</button></div></div>
+			<label><input type="checkbox" id="opt-reading-order" checked /> <span data-i18n="readLast">Read last morpheme first</span></label>
 			<div class="option-cluster">
 				<span id="opt-spelling-label" data-i18n="morphemeLabels">Morpheme labels</span>
 				<div id="opt-spelling" class="segmented" role="radiogroup" aria-labelledby="opt-spelling-label">
