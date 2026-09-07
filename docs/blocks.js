@@ -258,6 +258,11 @@ function isNounEndingPreset(preset) {
 	return Boolean(parseNominalCoordinate(preset)) && !isVerbEndingPreset(preset);
 }
 
+function isZeroEndingPreset(preset) {
+	return preset?.morpheme_type === "inflectional_ending"
+		&& (preset.expected === "Ø" || preset.seq?.[0]?.text === "" || preset.seq?.[0]?.text === "Ø");
+}
+
 export function defineNounEndingPickerBlock(nounEndingIndex, presetsById, getDisplayOptions) {
 	const options = (values, labels = values) => (values.length ? values.map((value, i) => [labels[i] ?? value, value]) : [["—", "NONE"]]);
 	const resolveFor = (block) => {
@@ -654,9 +659,10 @@ function restoreVerbPickerFields(workspace, block, preset) {
  */
 export function buildToolbox(presets, displayOptions = {}, { includeVerbPicker = true } = {}) {
 	const byCategoryName = new Map();
-	const hasStructuredNounEndings = presets.some(isNounEndingPreset);
+	const hasStructuredNounEndings = presets.some((preset) => !isZeroEndingPreset(preset) && isNounEndingPreset(preset));
 	const omittedByCategory = new Map();
 	for (const preset of presets) {
+		if (isZeroEndingPreset(preset)) continue;
 		if (isVerbEndingPreset(preset) || isNounEndingPreset(preset)) {
 			omittedByCategory.set("Inflectional endings", (omittedByCategory.get("Inflectional endings") ?? 0) + 1);
 			continue;
@@ -761,6 +767,7 @@ export function renderChain(workspace, ids, presetsById, displayOptions) {
 	for (const id of ids) {
 		const preset = presetsById.get(id);
 		if (!preset) continue;
+		if (isZeroEndingPreset(preset)) continue;
 		const isVerbEnding = isVerbEndingPreset(preset);
 		const isNounEnding = isNounEndingPreset(preset);
 		const block = workspace.newBlock(isVerbEnding ? VERB_ENDING_PICKER_TYPE : isNounEnding ? NOUN_ENDING_PICKER_TYPE : blockTypeForCategory(categoryForPreset(preset)));

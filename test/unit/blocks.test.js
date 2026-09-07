@@ -141,6 +141,21 @@ test("buildToolbox: structured nominal endings are replaced by the nominal picke
 	assert.match(category.name, /^Inflectional endings \(1 entries · 2 blocks\)$/);
 });
 
+test("buildToolbox: zero-realization endings are not exposed as blocks", () => {
+	const presets = [preset({
+		id: "N_ABS_SG",
+		expected: "Ø",
+		morpheme_type: "inflectional_ending",
+		case: "absolutive",
+		seq: [{ text: "", type: "INFLECTION" }],
+	})];
+	const toolbox = buildToolbox(presets, { showIds: false });
+	const category = toolbox.contents.find((c) => c.name.startsWith("Inflectional endings"));
+	assert.ok(category);
+	assert.equal(category.contents.length, 1);
+	assert.equal(category.contents[0].type, "morpheme_block__verb_ending_picker");
+});
+
 test("chainFromTopBlock: walks a fake block stack via getNextBlock(), collecting each block's .data", () => {
 	const third = { type: "morpheme_block__inflection", data: "V_IND_INTR_1SG", getNextBlock: () => null };
 	const second = { type: "morpheme_block__deriv_affix", data: "N_qaq_Vb", getNextBlock: () => third };
