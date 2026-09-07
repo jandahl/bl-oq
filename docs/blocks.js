@@ -56,6 +56,7 @@
 // built, same as any other join-legality rejection.
 
 import { buildVerbEndingIndex, candidatesFor, parsePersonNumber, personNumberLabel, moodDisplayLabel } from "./verb-endings.js";
+import { buildNounEndingIndex, nounCandidatesFor } from "./noun-endings.js";
 
 const CONNECTION_TYPE = "MORPHEME_CHAIN";
 const WORD_START_CONNECTION_TYPE = "WORD_START";
@@ -65,6 +66,7 @@ const WORD_CONTAINER_TYPE = `${BLOCK_TYPE_PREFIX}word_container`;
 const VERB_MOOD_TYPE = `${BLOCK_TYPE_PREFIX}verb_mood`;
 const VERB_SUBJECT_TYPE = `${BLOCK_TYPE_PREFIX}verb_subject`;
 const VERB_OBJECT_TYPE = `${BLOCK_TYPE_PREFIX}verb_object`;
+const NOUN_ENDING_PICKER_TYPE = `${BLOCK_TYPE_PREFIX}noun_ending_picker`;
 // Value-connection check type for the picker's object socket -- distinct
 // from CONNECTION_TYPE (a previous/next STATEMENT connection every ordinary
 // morpheme block uses) since this is a sideways value/output connection
@@ -250,6 +252,38 @@ function isMorphemeBlockType(type) {
 	// though there's only one real stem-to-ending stack on the workspace.
 	return typeof type === "string" && type.startsWith(BLOCK_TYPE_PREFIX)
 		&& ![WORD_CONTAINER_TYPE, VERB_MOOD_TYPE, VERB_SUBJECT_TYPE, VERB_OBJECT_TYPE].includes(type);
+}
+
+function isNounEndingPreset(preset) {
+	return Boolean(preset?.lexical_facts?.case || preset?.case) && preset.morpheme_type === "inflectional_ending" && !isVerbEndingPreset(preset);
+}
+
+export function defineNounEndingPickerBlock(nounEndingIndex, presetsById, getDisplayOptions) {
+	const options = (values, labels = values) => values.map((value, i) => [labels[i] ?? value, value]);
+	Blockly.Blocks[NOUN_ENDING_PICKER_TYPE] = {
+		init() {
+			this.nounEndingPickerState = { candidates: [] };
+			this.appendDummyInput("RESOLVED").appendField(new Blockly.FieldLabelSerializable(""), "RESOLVED");
+			this.appendDummyInput().appendField("Case").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.cases)), "CASE");
+			this.appendDummyInput().appendField("Possessor").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.possessors)), "POSSESSOR");
+			this.appendDummyInput().appendField("Number").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.numbers)), "NUMBER");
+			this.appendDummyInput("VARIANT").appendField("Variant").appendField(new Blockly.FieldDropdown(() => this.getSourceBlock()?.nounEndingPickerState?.candidates ?? [["—", "NONE"]]), "VARIANT");
+			this.setPreviousStatement(true, CONNECTION_TYPE);
+			this.setNextStatement(true, CONNECTION_TYPE);
+			this.setStyle(INFLECTION_BLOCK_STYLE);
+			this.setInputsInline(false);
+			const resolve = () => {
+				const candidates = nounCandidatesFor(nounEndingIndex, this.getFieldValue("CASE"), this.getFieldValue("POSSESSOR"), this.getFieldValue("NUMBER"));
+				this.nounEndingPickerState.candidates = candidates.map((c) => [c.label.slice(0, 70), c.id]);
+				const id = candidates[0]?.id ?? null;
+				this.data = id;
+				this.getField("RESOLVED")?.setValue(id && presetsById.get(id) ? labelFor(presetsById.get(id), getDisplayOptions()) : "(no such ending in the catalog)");
+				if (this.rendered) this.render();
+			};
+			this.nounEndingPickerState.resolve = resolve;
+			resolve();
+		},
+	};
 }
 
 // ---------------------------------------------------------------------------
@@ -617,8 +651,10 @@ function restoreVerbPickerFields(workspace, block, preset) {
  */
 export function buildToolbox(presets, displayOptions = {}, { includeVerbPicker = true } = {}) {
 	const byCategoryName = new Map();
+	const hasStructuredNounEndings = presets.some(isNounEndingPreset);
 	for (const preset of presets) {
 		if (isVerbEndingPreset(preset)) continue;
+		if (isNounEndingPreset(preset)) continue;
 		const cat = categoryForPreset(preset);
 		if (!byCategoryName.has(cat.name)) byCategoryName.set(cat.name, { ...cat, presets: [] });
 		byCategoryName.get(cat.name).presets.push(preset);
@@ -646,6 +682,7 @@ export function buildToolbox(presets, displayOptions = {}, { includeVerbPicker =
 				// meaning elsewhere in the current word builder. Object remains
 				// a separate typed block because its presence changes valency.
 				blocks.unshift({ kind: "block", type: VERB_ENDING_PICKER_TYPE });
+				if (includeVerbPicker && hasStructuredNounEndings) blocks.unshift({ kind: "block", type: NOUN_ENDING_PICKER_TYPE });
 			}
 			return {
 				kind: "category",
@@ -714,14 +751,23 @@ export function renderChain(workspace, ids, presetsById, displayOptions) {
 		const preset = presetsById.get(id);
 		if (!preset) continue;
 		const isVerbEnding = isVerbEndingPreset(preset);
-		const block = workspace.newBlock(isVerbEnding ? VERB_ENDING_PICKER_TYPE : blockTypeForCategory(categoryForPreset(preset)));
-		if (!isVerbEnding) {
+		const isNounEnding = isNounEndingPreset(preset);
+		const block = workspace.newBlock(isVerbEnding ? VERB_ENDING_PICKER_TYPE : isNounEnding ? NOUN_ENDING_PICKER_TYPE : blockTypeForCategory(categoryForPreset(preset)));
+		if (!isVerbEnding && !isNounEnding) {
 			block.data = id;
 			block.setFieldValue(labelFor(preset, displayOptions), "LABEL");
 		}
 		block.initSvg();
 		block.render();
 		if (isVerbEnding) restoreVerbPickerFields(workspace, block, preset);
+		if (isNounEnding) {
+			const coordinate = preset.lexical_facts ?? preset;
+			const match = /^N_[A-Z]+(?:_POSS(1SG|2SG|3SG|4SG|1PL|2PL|3PL|4PL))?_(SG|PL)/.exec(preset.id);
+			block.setFieldValue(coordinate.case, "CASE");
+			block.setFieldValue(match?.[1] ?? "none", "POSSESSOR");
+			block.setFieldValue(match?.[2] ?? "SG", "NUMBER");
+			block.nounEndingPickerState.resolve();
+		}
 		if (prev) {
 			prev.nextConnection.connect(block.previousConnection);
 		} else {
@@ -744,4 +790,4 @@ export function relabelBlocks(workspace, presetsById, displayOptions) {
 	}
 }
 
-export { buildVerbEndingIndex, WORD_CONTAINER_TYPE };
+export { buildVerbEndingIndex, buildNounEndingIndex, WORD_CONTAINER_TYPE, NOUN_ENDING_PICKER_TYPE };

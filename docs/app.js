@@ -2,7 +2,7 @@ import { buildWord, analyzeWordAsync, glossSummaryItems, resolveMoodLabel, resol
 import { loadCatalog } from "./catalog.js";
 import {
 	defineMorphemeBlocks, buildToolbox, topLevelChains, renderChain, relabelBlocks,
-	buildVerbEndingIndex, defineVerbEndingPickerBlock, defineVerbObjectBlock, registerVerbPickerReactivity,
+	buildVerbEndingIndex, buildNounEndingIndex, defineVerbEndingPickerBlock, defineNounEndingPickerBlock, defineVerbObjectBlock, registerVerbPickerReactivity,
 	presetMatchesQuery,
 } from "./blocks.js";
 import { renderBreakdown, renderAlternativeBreakdowns } from "./breakdown.js";
@@ -583,7 +583,9 @@ async function main() {
 
 	defineMorphemeBlocks();
 	const verbEndingIndex = buildVerbEndingIndex(presets);
+	const nounEndingIndex = buildNounEndingIndex(presets);
 	defineVerbEndingPickerBlock(verbEndingIndex, presetsById, displayOptions, resolveMoodLabel, resolvePersonLabel);
+	defineNounEndingPickerBlock(nounEndingIndex, presetsById, displayOptions);
 	defineVerbObjectBlock(verbEndingIndex, resolvePersonLabel);
 
 	injectWorkspace();
