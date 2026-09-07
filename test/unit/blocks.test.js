@@ -125,6 +125,21 @@ test("buildToolbox: a real verb-mood ending (carrying inflection.subject) is exc
 	assert.equal(category.categorystyle, "oq_inflectional_category");
 });
 
+test("buildToolbox: structured nominal endings are replaced by the nominal picker", () => {
+	const presets = [preset({
+		id: "N_ABS_SG",
+		morpheme_type: "inflectional_ending",
+		case: "absolutive",
+		lexical_facts: { morpheme_type: "inflectional_ending", case: "absolutive" },
+	})];
+	const toolbox = buildToolbox(presets, { showIds: false });
+	const category = toolbox.contents.find((c) => c.name.startsWith("Inflectional endings"));
+	assert.equal(category.contents.length, 2);
+	assert.equal(category.contents[0].type, "morpheme_block__noun_ending_picker");
+	assert.equal(category.contents[1].type, "morpheme_block__verb_ending_picker");
+	assert.ok(!category.contents.some((b) => b.data === "N_ABS_SG"));
+});
+
 test("chainFromTopBlock: walks a fake block stack via getNextBlock(), collecting each block's .data", () => {
 	const third = { type: "morpheme_block__inflection", data: "V_IND_INTR_1SG", getNextBlock: () => null };
 	const second = { type: "morpheme_block__deriv_affix", data: "N_qaq_Vb", getNextBlock: () => third };

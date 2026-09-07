@@ -260,28 +260,31 @@ function isNounEndingPreset(preset) {
 
 export function defineNounEndingPickerBlock(nounEndingIndex, presetsById, getDisplayOptions) {
 	const options = (values, labels = values) => values.map((value, i) => [labels[i] ?? value, value]);
+	const resolveFor = (block) => {
+		const candidates = nounCandidatesFor(nounEndingIndex, block.getFieldValue("CASE"), block.getFieldValue("POSSESSOR"), block.getFieldValue("NUMBER"));
+		block.nounEndingPickerState.candidates = candidates.map((c) => [c.label.slice(0, 70), c.id]);
+		const currentVariant = block.getFieldValue("VARIANT");
+		const id = candidates.some((c) => c.id === currentVariant) ? currentVariant : candidates[0]?.id ?? null;
+		block.data = id;
+		block.getField("RESOLVED")?.setValue(id && presetsById.get(id) ? labelFor(presetsById.get(id), getDisplayOptions()) : "(no such ending in the catalog)");
+		if (block.rendered) block.render();
+		return id;
+	};
 	Blockly.Blocks[NOUN_ENDING_PICKER_TYPE] = {
 		init() {
 			this.nounEndingPickerState = { candidates: [] };
 			this.appendDummyInput("RESOLVED").appendField(new Blockly.FieldLabelSerializable(""), "RESOLVED");
-			this.appendDummyInput().appendField("Case").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.cases)), "CASE");
-			this.appendDummyInput().appendField("Possessor").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.possessors)), "POSSESSOR");
-			this.appendDummyInput().appendField("Number").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.numbers)), "NUMBER");
-			this.appendDummyInput("VARIANT").appendField("Variant").appendField(new Blockly.FieldDropdown(() => this.getSourceBlock()?.nounEndingPickerState?.candidates ?? [["—", "NONE"]]), "VARIANT");
+			const changed = function () { const block = this.getSourceBlock(); if (block) resolveFor(block); };
+			this.appendDummyInput().appendField("Case").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.cases), changed), "CASE");
+			this.appendDummyInput().appendField("Possessor").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.possessors), changed), "POSSESSOR");
+			this.appendDummyInput().appendField("Number").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.numbers), changed), "NUMBER");
+			this.appendDummyInput("VARIANT").appendField("Variant").appendField(new Blockly.FieldDropdown(function () { return this.getSourceBlock()?.nounEndingPickerState?.candidates ?? [["—", "NONE"]]; }, changed), "VARIANT");
 			this.setPreviousStatement(true, CONNECTION_TYPE);
 			this.setNextStatement(true, CONNECTION_TYPE);
 			this.setStyle(INFLECTION_BLOCK_STYLE);
 			this.setInputsInline(false);
-			const resolve = () => {
-				const candidates = nounCandidatesFor(nounEndingIndex, this.getFieldValue("CASE"), this.getFieldValue("POSSESSOR"), this.getFieldValue("NUMBER"));
-				this.nounEndingPickerState.candidates = candidates.map((c) => [c.label.slice(0, 70), c.id]);
-				const id = candidates[0]?.id ?? null;
-				this.data = id;
-				this.getField("RESOLVED")?.setValue(id && presetsById.get(id) ? labelFor(presetsById.get(id), getDisplayOptions()) : "(no such ending in the catalog)");
-				if (this.rendered) this.render();
-			};
-			this.nounEndingPickerState.resolve = resolve;
-			resolve();
+			this.nounEndingPickerState.resolve = () => resolveFor(this);
+			resolveFor(this);
 		},
 	};
 }
