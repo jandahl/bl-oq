@@ -685,7 +685,10 @@ export function buildToolbox(presets, displayOptions = {}, { includeVerbPicker =
 				// meaning elsewhere in the current word builder. Object remains
 				// a separate typed block because its presence changes valency.
 				blocks.unshift({ kind: "block", type: VERB_ENDING_PICKER_TYPE });
-				if (includeVerbPicker && hasStructuredNounEndings) blocks.unshift({ kind: "block", type: NOUN_ENDING_PICKER_TYPE });
+				// Keep the established verb picker first: existing users/tests can
+				// drag the first entry for the common verb workflow. Add the nominal
+				// picker immediately after it.
+				if (hasStructuredNounEndings) blocks.splice(1, 0, { kind: "block", type: NOUN_ENDING_PICKER_TYPE });
 			}
 			return {
 				kind: "category",
