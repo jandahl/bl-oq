@@ -135,8 +135,8 @@ test("buildToolbox: structured nominal endings are replaced by the nominal picke
 	const toolbox = buildToolbox(presets, { showIds: false });
 	const category = toolbox.contents.find((c) => c.name.startsWith("Inflectional endings"));
 	assert.equal(category.contents.length, 2);
-	assert.equal(category.contents[0].type, "morpheme_block__noun_ending_picker");
-	assert.equal(category.contents[1].type, "morpheme_block__verb_ending_picker");
+	assert.equal(category.contents[0].type, "morpheme_block__verb_ending_picker");
+	assert.equal(category.contents[1].type, "morpheme_block__noun_ending_picker");
 	assert.ok(!category.contents.some((b) => b.data === "N_ABS_SG"));
 });
 

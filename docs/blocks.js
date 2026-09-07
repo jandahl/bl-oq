@@ -56,7 +56,7 @@
 // built, same as any other join-legality rejection.
 
 import { buildVerbEndingIndex, candidatesFor, parsePersonNumber, personNumberLabel, moodDisplayLabel } from "./verb-endings.js";
-import { buildNounEndingIndex, nounCandidatesFor } from "./noun-endings.js";
+import { buildNounEndingIndex, nounCandidatesFor, parseNominalCoordinate } from "./noun-endings.js";
 
 const CONNECTION_TYPE = "MORPHEME_CHAIN";
 const WORD_START_CONNECTION_TYPE = "WORD_START";
@@ -255,11 +255,11 @@ function isMorphemeBlockType(type) {
 }
 
 function isNounEndingPreset(preset) {
-	return Boolean(preset?.lexical_facts?.case || preset?.case) && preset.morpheme_type === "inflectional_ending" && !isVerbEndingPreset(preset);
+	return Boolean(parseNominalCoordinate(preset)) && !isVerbEndingPreset(preset);
 }
 
 export function defineNounEndingPickerBlock(nounEndingIndex, presetsById, getDisplayOptions) {
-	const options = (values, labels = values) => values.map((value, i) => [labels[i] ?? value, value]);
+	const options = (values, labels = values) => (values.length ? values.map((value, i) => [labels[i] ?? value, value]) : [["—", "NONE"]]);
 	const resolveFor = (block) => {
 		const candidates = nounCandidatesFor(nounEndingIndex, block.getFieldValue("CASE"), block.getFieldValue("POSSESSOR"), block.getFieldValue("NUMBER"));
 		block.nounEndingPickerState.candidates = candidates.map((c) => [c.label.slice(0, 70), c.id]);
@@ -685,7 +685,10 @@ export function buildToolbox(presets, displayOptions = {}, { includeVerbPicker =
 				// meaning elsewhere in the current word builder. Object remains
 				// a separate typed block because its presence changes valency.
 				blocks.unshift({ kind: "block", type: VERB_ENDING_PICKER_TYPE });
-				if (includeVerbPicker && hasStructuredNounEndings) blocks.unshift({ kind: "block", type: NOUN_ENDING_PICKER_TYPE });
+				// Keep the established verb picker first: existing users/tests can
+				// drag the first entry for the common verb workflow. Add the nominal
+				// picker immediately after it.
+				if (hasStructuredNounEndings) blocks.splice(1, 0, { kind: "block", type: NOUN_ENDING_PICKER_TYPE });
 			}
 			return {
 				kind: "category",

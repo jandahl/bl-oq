@@ -6,12 +6,14 @@
 const CASE_ORDER = ["absolutive", "ergative", "instrumental", "allative", "locative", "ablative", "equalis", "vialis"];
 const NUMBER_ORDER = ["SG", "PL"];
 const POSSESSOR_ORDER = ["none", "1SG", "2SG", "3SG", "4SG", "1PL", "2PL", "3PL", "4PL"];
+const CASE_BY_CODE = { ABS: "absolutive", ERG: "ergative", INS: "instrumental", ALL: "allative", LOC: "locative", ABL: "ablative", EQU: "equalis", VIA: "vialis" };
 
 function parseNominalCoordinate(preset) {
 	const facts = preset?.lexical_facts ?? preset;
 	const match = /^N_[A-Z]+(?:_POSS(1SG|2SG|3SG|4SG|1PL|2PL|3PL|4PL))?_(SG|PL)(?:_[A-Z]+)?$/.exec(preset?.id ?? "");
-	if (facts.morpheme_type !== "inflectional_ending" || !facts.case || !match) return null;
-	return { case: facts.case, possessor: match[1] ?? "none", number: match[2] };
+	const caseName = facts.case || CASE_BY_CODE[preset?.id?.split("_")[1]];
+	if (facts.morpheme_type !== "inflectional_ending" || !caseName || !match) return null;
+	return { case: caseName, possessor: match[1] ?? "none", number: match[2] };
 }
 
 export function buildNounEndingIndex(presets) {
