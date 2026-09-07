@@ -82,7 +82,7 @@ export function renderBreakdown(container, word, seq, buildResult, glossSummaryI
 
 		const gloss = document.createElement("span");
 		gloss.className = "breakdown-gloss";
-		gloss.textContent = rest;
+		gloss.textContent = item.secondary ? `${rest} / ${item.secondary}` : rest;
 		row.appendChild(gloss);
 
 		rows.appendChild(row);
