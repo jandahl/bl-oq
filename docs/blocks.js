@@ -229,7 +229,7 @@ export function defineMorphemeBlocks() {
 					.appendField(new Blockly.FieldLabelSerializable(""), "LABEL");
 				if (cat.id === "stem_n") {
 					this.appendDummyInput("PRESENTATION")
-						.appendField("translation")
+						.appendField(`${UI_INDENT}translation`)
 						.appendField(new Blockly.FieldDropdown(NOUN_PRESENTATION_OPTIONS), "PRESENTATION");
 				}
 				this.setPreviousStatement(
@@ -275,10 +275,10 @@ export function defineNounEndingPickerBlock(nounEndingIndex, presetsById, getDis
 			this.nounEndingPickerState = { candidates: [] };
 			this.appendDummyInput("RESOLVED").appendField(new Blockly.FieldLabelSerializable(""), "RESOLVED");
 			const changed = function () { const block = this.getSourceBlock(); if (block) resolveFor(block); };
-			this.appendDummyInput().appendField("Case").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.cases), changed), "CASE");
-			this.appendDummyInput().appendField("Possessor").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.possessors), changed), "POSSESSOR");
-			this.appendDummyInput().appendField("Number").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.numbers), changed), "NUMBER");
-			this.appendDummyInput("VARIANT").appendField("Variant").appendField(new Blockly.FieldDropdown(function () { return this.getSourceBlock()?.nounEndingPickerState?.candidates ?? [["—", "NONE"]]; }, changed), "VARIANT");
+			this.appendDummyInput().appendField(`${UI_INDENT}Case`).appendField(new Blockly.FieldDropdown(options(nounEndingIndex.cases), changed), "CASE");
+			this.appendDummyInput().appendField(`${UI_INDENT}Possessor`).appendField(new Blockly.FieldDropdown(options(nounEndingIndex.possessors), changed), "POSSESSOR");
+			this.appendDummyInput().appendField(`${UI_INDENT}Number`).appendField(new Blockly.FieldDropdown(options(nounEndingIndex.numbers), changed), "NUMBER");
+			this.appendDummyInput("VARIANT").appendField(`${UI_INDENT}Variant`).appendField(new Blockly.FieldDropdown(function () { return this.getSourceBlock()?.nounEndingPickerState?.candidates ?? [["—", "NONE"]]; }, changed), "VARIANT");
 			this.setPreviousStatement(true, CONNECTION_TYPE);
 			this.setNextStatement(true, CONNECTION_TYPE);
 			this.setStyle(INFLECTION_BLOCK_STYLE);
