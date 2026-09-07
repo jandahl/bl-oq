@@ -70,3 +70,29 @@ test("labelFor: every real catalog preset, in every display-option combination, 
 	expect(result.presetCount).toBeGreaterThan(1000);
 	expect(result.failures).toEqual([]);
 });
+
+test("toolbox category ratchet: grouped categories retain source-entry coverage", async ({ page }) => {
+	const result = await page.evaluate(async () => {
+		const { buildToolbox } = await import("/blocks.js");
+		const { mergeMorphemeSources, GRAMMAR_MORPHEMES_URL } = await import("/oq-api.js");
+		const res = await fetch(GRAMMAR_MORPHEMES_URL);
+		if (!res.ok) throw new Error(`catalog fetch failed: ${res.status}`);
+		const value = await res.json();
+		const { presets } = mergeMorphemeSources([{ status: "fulfilled", value }], [{ buildable: true, source: "grammarian" }]);
+		const toolbox = buildToolbox(presets, { showIds: false });
+		return toolbox.contents.map((category) => category.name);
+	});
+
+	// Ratchet against the regression where hundreds of inflectional entries
+	// appeared as only three visible blocks. Update this threshold deliberately
+	// if the upstream schema intentionally changes, rather than silently
+	// accepting a local filtering regression.
+	const inflections = result.find((name) => name.startsWith("Inflectional endings"));
+	expect(inflections).toMatch(/^Inflectional endings \(\d+ entries · \d+ blocks\)$/);
+	const [, entryCount, blockCount] = inflections.match(/\((\d+) entries · (\d+) blocks\)$/);
+	expect(Number(entryCount)).toBeGreaterThanOrEqual(500);
+	expect(Number(blockCount)).toBeGreaterThanOrEqual(2);
+	for (const category of ["Stems — nouns", "Stems — verbs", "Derivational affixes", "Enclitics", "Sentential affixes"]) {
+		expect(result.some((name) => name.startsWith(`${category} (`))).toBe(true);
+	}
+});
