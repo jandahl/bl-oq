@@ -6,7 +6,9 @@ const ending = (id, caseName, meaning = id) => ({ id, meaning, lexical_facts: { 
 
 test("parseNominalCoordinate recognizes explicit case, number, and possessor coordinates", () => {
 	assert.deepEqual(parseNominalCoordinate(ending("N_ABS_POSS3SG_PL", "absolutive")), { case: "absolutive", possessor: "3SG", number: "PL" });
+	assert.deepEqual(parseNominalCoordinate({ id: "N_ABS_SG", morpheme_type: "inflectional_ending", case: "absolutive" }), { case: "absolutive", possessor: "none", number: "SG" });
 	assert.equal(parseNominalCoordinate(ending("N_DEM_EXCL_A", "")), null);
+	assert.equal(parseNominalCoordinate(ending("N_ABS_POSS9SG_SG", "absolutive")), null);
 });
 
 test("buildNounEndingIndex groups structured nominal endings and keeps duplicate candidates", () => {

@@ -344,6 +344,26 @@ test("Build: filtering the palette hides the verb ending picker entirely (bl-oq-
 	expect(names.some((n) => n.startsWith("Inflectional endings"))).toBe(false);
 });
 
+test("Build: live catalog exposes a nominal ending picker that resolves a real ending", async ({ page }) => {
+	const result = await page.evaluate(() => {
+		const ws = Blockly.getMainWorkspace();
+		const block = ws.newBlock("morpheme_block__noun_ending_picker");
+		block.initSvg();
+		block.render();
+		const initial = { type: block.type, data: block.data, case: block.getFieldValue("CASE"), number: block.getFieldValue("NUMBER") };
+		block.setFieldValue("ergative", "CASE");
+		block.setFieldValue("PL", "NUMBER");
+		const changed = { data: block.data, case: block.getFieldValue("CASE"), number: block.getFieldValue("NUMBER") };
+		block.dispose(false);
+		return { initial, changed };
+	});
+	expect(result.initial.type).toBe("morpheme_block__noun_ending_picker");
+	expect(result.initial.data).toBeTruthy();
+	expect(result.changed.case).toBe("ergative");
+	expect(result.changed.number).toBe("PL");
+	expect(result.changed.data).toMatch(/^N_ERG_/);
+});
+
 test("Danish gloss language: block labels and Deconstruct's translation switch to Danish text (bl-oq-ly#17)", async ({ page }) => {
 	await choose(page, "#opt-lang", "da");
 	await page.fill("#word-input", "qimmeqarpunga");
