@@ -40,6 +40,10 @@ test.beforeEach(async ({ page }) => {
 	});
 	await page.goto("/");
 	await expect(page.locator("#status-line")).toContainText("Loaded", { timeout: 20_000 });
+	// Most historical tests exercise a display control directly. Keep those
+	// tests focused on their behavior; the responsive tests below explicitly
+	// verify the panel's collapsed state.
+	if (await page.locator("#display-panel").isHidden()) await page.click("#display-toggle");
 });
 
 test("catalog loads with a real morpheme count and surfaces the non-authoritative note", async ({ page }) => {
@@ -680,6 +684,7 @@ test("wide layout: gloss language stays in the compact bar and other options sta
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await page.reload();
 	await expect(page.locator("#status-line")).toContainText("Loaded", { timeout: 20_000 });
+	if (await page.locator("#display-panel").isVisible()) await page.click("#display-toggle");
 	await expect(page.locator("#opt-lang")).toBeVisible();
 	await expect(page.locator("#display-toggle")).toBeVisible();
 	await expect(page.locator("#display-panel")).toBeHidden();
