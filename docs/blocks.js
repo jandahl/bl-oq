@@ -655,9 +655,12 @@ function restoreVerbPickerFields(workspace, block, preset) {
 export function buildToolbox(presets, displayOptions = {}, { includeVerbPicker = true } = {}) {
 	const byCategoryName = new Map();
 	const hasStructuredNounEndings = presets.some(isNounEndingPreset);
+	const omittedByCategory = new Map();
 	for (const preset of presets) {
-		if (isVerbEndingPreset(preset)) continue;
-		if (isNounEndingPreset(preset)) continue;
+		if (isVerbEndingPreset(preset) || isNounEndingPreset(preset)) {
+			omittedByCategory.set("Inflectional endings", (omittedByCategory.get("Inflectional endings") ?? 0) + 1);
+			continue;
+		}
 		const cat = categoryForPreset(preset);
 		if (!byCategoryName.has(cat.name)) byCategoryName.set(cat.name, { ...cat, presets: [] });
 		byCategoryName.get(cat.name).presets.push(preset);
@@ -692,7 +695,9 @@ export function buildToolbox(presets, displayOptions = {}, { includeVerbPicker =
 			}
 			return {
 				kind: "category",
-				name: `${cat.name} (${blocks.length})`,
+				name: omittedByCategory.has(cat.name)
+					? `${cat.name} (${cat.presets.length + omittedByCategory.get(cat.name)} entries · ${blocks.length} blocks)`
+					: `${cat.name} (${blocks.length})`,
 				categorystyle: `${cat.colourClass}_category`,
 				contents: blocks,
 			};

@@ -138,6 +138,7 @@ test("buildToolbox: structured nominal endings are replaced by the nominal picke
 	assert.equal(category.contents[0].type, "morpheme_block__verb_ending_picker");
 	assert.equal(category.contents[1].type, "morpheme_block__noun_ending_picker");
 	assert.ok(!category.contents.some((b) => b.data === "N_ABS_SG"));
+	assert.match(category.name, /^Inflectional endings \(1 entries · 2 blocks\)$/);
 });
 
 test("chainFromTopBlock: walks a fake block stack via getNextBlock(), collecting each block's .data", () => {
