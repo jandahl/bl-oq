@@ -12,21 +12,19 @@
 			<h1>bl-oq-ly</h1>
 			<div class="header-actions">
 				<button id="theme-toggle" class="theme-toggle" type="button">Theme: Auto</button>
-				<button id="display-toggle" class="theme-toggle" type="button" aria-controls="display-panel" aria-expanded="true">Display</button>
+				<button id="display-toggle" class="theme-toggle" type="button" data-i18n="display" aria-controls="display-panel" aria-expanded="false">Settings</button>
 			</div>
 		</div>
 		<p class="subtitle" data-i18n="subtitle">A block-based learning aid for building and taking apart Kalaallisut words. Prototype — nothing here is authoritative.</p>
 		<form class="deconstruct-input" id="deconstruct-form">
 			<label for="word-input" data-i18n="attested">Attested word</label>
 			<div class="clearable">
-				<input id="word-input" type="text" placeholder="e.g. qimmeqarpunga" autocomplete="off" spellcheck="false" />
-				<button type="button" class="clear-field" id="word-input-clear" hidden aria-label="Clear word">×</button>
+				<input id="word-input" type="text" data-i18n-placeholder="wordPlaceholder" placeholder="e.g. qimmeqarpunga" autocomplete="off" spellcheck="false" />
+				<button type="button" class="clear-field" id="word-input-clear" hidden aria-label="Clear word" data-i18n-aria-label="clearWord">×</button>
 			</div>
 			<button id="analyze-btn" type="submit" data-i18n="deconstruct">Deconstruct</button>
 		</form>
-		<div class="view-options" id="display-panel">
-			<div class="option-cluster"><span id="ui-lang-label">UI language</span><div id="opt-ui-lang" class="segmented" role="radiogroup" aria-labelledby="ui-lang-label"><button type="button" role="radio" data-value="en" aria-checked="true">English</button><button type="button" role="radio" data-value="da" aria-checked="false">Dansk</button></div></div>
-			<label><input type="checkbox" id="opt-reading-order" checked /> <span data-i18n="readLast">Read last morpheme first</span></label>
+		<div class="view-options gloss-language-bar">
 			<div class="option-cluster">
 				<span id="opt-lang-label" data-i18n="glossLanguage">Gloss language</span>
 				<div id="opt-lang" class="segmented" role="radiogroup" aria-labelledby="opt-lang-label">
@@ -35,26 +33,35 @@
 					<button type="button" role="radio" data-value="both" aria-checked="false" data-i18n="both">Both</button>
 				</div>
 			</div>
+		</div>
+		<div class="view-options settings-panel" id="display-panel" aria-labelledby="settings-heading">
+			<h2 id="settings-heading" data-i18n="settingsHeading">Display and language</h2>
+			<div class="settings-grid">
+			<div class="option-cluster"><span id="ui-lang-label" data-i18n="uiLanguage">UI language</span><div id="opt-ui-lang" class="segmented" role="radiogroup" aria-labelledby="ui-lang-label"><button type="button" role="radio" data-value="en" aria-checked="true" data-i18n="english">English</button><button type="button" role="radio" data-value="da" aria-checked="false" data-i18n="danish">Dansk</button></div></div>
+			<label><input type="checkbox" id="opt-reading-order" checked /> <span data-i18n="readLast">Read last morpheme first</span></label>
 			<div class="option-cluster">
 				<span id="opt-spelling-label" data-i18n="morphemeLabels">Morpheme labels</span>
 				<div id="opt-spelling" class="segmented" role="radiogroup" aria-labelledby="opt-spelling-label">
-					<button type="button" role="radio" data-value="both" aria-checked="true">Form + gloss</button>
-					<button type="button" role="radio" data-value="spelling-only" aria-checked="false">Form only</button>
-					<button type="button" role="radio" data-value="gloss-only" aria-checked="false">Gloss only</button>
+					<button type="button" role="radio" data-value="both" aria-checked="true" data-i18n="formGloss">Form + gloss</button>
+					<button type="button" role="radio" data-value="spelling-only" aria-checked="false" data-i18n="formOnly">Form only</button>
+					<button type="button" role="radio" data-value="gloss-only" aria-checked="false" data-i18n="glossOnly">Gloss only</button>
 				</div>
 			</div>
 			<div class="option-cluster">
-				<span id="blockly-theme-label">Block style</span>
+				<span id="blockly-theme-label" data-i18n="blockStyle">Block style</span>
 				<div id="blockly-theme-select" class="segmented" role="radiogroup" aria-labelledby="blockly-theme-label">
-					<button type="button" role="radio" data-value="classic" aria-checked="true">Classic</button>
-					<button type="button" role="radio" data-value="zelos" aria-checked="false">Zelos</button>
+					<button type="button" role="radio" data-value="classic" aria-checked="true" data-i18n="classic">Classic</button>
+					<button type="button" role="radio" data-value="zelos" aria-checked="false" data-i18n="zelos">Zelos</button>
 				</div>
 			</div>
-			<label><input type="checkbox" id="opt-show-ids" /> Add internal API ids</label>
+			<label><input type="checkbox" id="opt-show-ids" /> <span data-i18n="showIds">Add internal API ids</span></label>
+			</div>
 		</div>
 	</header>
 
 	<main>
+		<section class="page-section analyze-section" aria-labelledby="analyze-heading">
+			<h2 id="analyze-heading" data-i18n="analyzeHeading">Analyze a word</h2>
 		<details id="breakdown-details" hidden>
 			<summary id="breakdown-summary">
 				<span class="disclosure-label">Morpheme chain</span>
@@ -68,20 +75,25 @@
 		<section id="status" aria-live="polite">
 			<p id="status-line">Loading morpheme catalog…</p>
 		</section>
+		</section>
 
+		<section class="page-section build-section" aria-labelledby="build-heading">
+			<h2 id="build-heading" data-i18n="buildHeading">Build a word</h2>
+			<p class="section-instruction" data-i18n="buildInstruction">Choose a category, then drag a block onto the canvas.</p>
 		<div class="palette-controls">
-			<button id="palette-toggle" type="button">Hide palette</button>
+			<button id="palette-toggle" type="button" data-i18n="paletteHide">Hide palette</button>
 			<div class="clearable" id="morpheme-filter-wrap">
 				<input id="morpheme-filter" type="text" placeholder="Filter by Kalaallisut form, id, or gloss…" autocomplete="off" spellcheck="false" />
-				<button type="button" class="clear-field" id="morpheme-filter-clear" hidden aria-label="Clear filter">×</button>
+				<button type="button" class="clear-field" id="morpheme-filter-clear" hidden aria-label="Clear filter" data-i18n-aria-label="clearFilter">×</button>
 			</div>
 		</div>
 
 		<div id="blockly-div"></div>
+		</section>
 
-		<section id="example-words" aria-labelledby="example-words-heading">
-			<h2 id="example-words-heading">Try an example</h2>
-			<p>Deconstructs the word and drops the verified chain onto the canvas.</p>
+		<section id="example-words" class="page-section" aria-labelledby="example-words-heading">
+			<h2 id="example-words-heading" data-i18n="tryExample">Try an example</h2>
+			<p data-i18n="exampleDescription">Deconstructs the word and drops the verified chain onto the canvas.</p>
 			<div class="example-word-list">
 				<button type="button" data-example-word="qimmeq" data-example-class="noun">qimmeq</button>
 				<button type="button" data-example-word="aallarpoq" data-example-class="verb">aallarpoq</button>
@@ -90,7 +102,7 @@
 				<button type="button" data-example-word="qimmequna" data-example-class="enclitic">qimmequna</button>
 				<button type="button" data-example-word="takuvakkit" data-example-class="transitive verb">takuvakkit</button>
 			</div>
-			<button id="worked-examples-btn" type="button">Extended examples</button>
+			<button id="worked-examples-btn" type="button" data-i18n="extendedExamples">Extended examples</button>
 		</section>
 	</main>
 
@@ -112,12 +124,7 @@
 	</dialog>
 
 	<footer>
-		<p>
-			Consumes <a href="https://jandahl.github.io/oq-api/">oq-api</a>'s public API
-			(the published oq-api v0.1-latest package, see README) and
-			<a href="https://github.com/jandahl/jandahl-custom-KAL-grammarian">jandahl-custom-KAL-grammarian</a>'s
-			published morpheme data. Not linked from oq's main app; direct-URL only, by design.
-		</p>
+		<p data-i18n="footerText">An experimental learning tool for exploring Kalaallisut word structure.</p>
 	</footer>
 
 	<script src="./vendor/blockly.js"></script>

@@ -12,7 +12,12 @@
 import { test, expect } from "@playwright/test";
 
 /** Gloss language / morpheme labels / block style are segmented radios, not <select>s. */
+async function openSettings(page) {
+	if (await page.locator("#display-panel").isHidden()) await page.click("#display-toggle");
+}
+
 async function choose(page, group, value) {
+	if (group !== "#opt-lang") await openSettings(page);
 	await page.locator(`${group} [data-value="${value}"]`).click();
 }
 
@@ -48,6 +53,19 @@ test("catalog loads with a real morpheme count and surfaces the non-authoritativ
 	expect(status).toContain("hand-authored, not yet dictionary-verified");
 });
 
+test("display segmented controls support keyboard navigation", async ({ page }) => {
+	await page.click("#display-toggle");
+	const spelling = page.locator("#opt-spelling [role=radio]");
+	await spelling.first().focus();
+	await page.keyboard.press("ArrowRight");
+	await expect(spelling.nth(1)).toHaveAttribute("aria-checked", "true");
+	await expect(spelling.nth(1)).toBeFocused();
+	await expect(spelling.nth(0)).toHaveAttribute("aria-checked", "false");
+	await page.keyboard.press("End");
+	await expect(spelling.last()).toBeFocused();
+	await expect(spelling.last()).toHaveAttribute("aria-checked", "true");
+});
+
 test("word and filter fields have a clear button that empties them", async ({ page }) => {
 	await page.fill("#word-input", "qimmeq");
 	await expect(page.locator("#word-input-clear")).toBeVisible();
@@ -62,9 +80,9 @@ test("word and filter fields have a clear button that empties them", async ({ pa
 	await expect(page.locator("#morpheme-filter-clear")).toBeHidden();
 });
 
-test("credits point at oq-api on GitHub Pages, not the private oq repo", async ({ page }) => {
-	const link = page.locator("footer a", { hasText: /^oq-api$/ });
-	await expect(link).toHaveAttribute("href", "https://jandahl.github.io/oq-api/");
+test("footer stays learner-facing and does not expose repository implementation details", async ({ page }) => {
+	await expect(page.locator("footer")).toContainText("experimental learning tool");
+	await expect(page.locator("footer a")).toHaveCount(0);
 });
 
 test("Deconstruct: example words load into the analyzer", async ({ page }) => {
@@ -102,13 +120,17 @@ test("Deconstruct: oq CI worked examples open in a filterable modal", async ({ p
 	await expect(modal).toBeHidden();
 });
 
-async function dragFirstFlyoutBlockIntoWorkspace(page, categoryLabelText, dropX, dropY) {
+async function dragFirstFlyoutBlockIntoWorkspace(page, categoryLabelText) {
 	const category = page.locator('[role="treeitem"]').filter({ hasText: categoryLabelText }).first();
 	await category.click({ force: true });
 	await page.waitForTimeout(400);
 	const block = page.locator(".blocklyFlyout .blocklyDraggable").first();
 	const box = await block.boundingBox();
 	if (!box) throw new Error("flyout block has no bounding box");
+	const workspaceBox = await page.locator("#blockly-div").boundingBox();
+	if (!workspaceBox) throw new Error("workspace has no bounding box");
+	const dropX = workspaceBox.x + workspaceBox.width * 0.65;
+	const dropY = workspaceBox.y + workspaceBox.height * 0.25;
 	await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
 	await page.mouse.down();
 	await page.mouse.move(dropX, dropY, { steps: 10 });
@@ -117,7 +139,7 @@ async function dragFirstFlyoutBlockIntoWorkspace(page, categoryLabelText, dropX,
 }
 
 test("Build: dragging a single stem in produces a complete-word status (regression guard: buildWord() wiring)", async ({ page }) => {
-	await dragFirstFlyoutBlockIntoWorkspace(page, "Stems — nouns", 250, 120);
+	await dragFirstFlyoutBlockIntoWorkspace(page, "Stems — nouns");
 	await expect(page.locator("#status")).toHaveClass(/ok/);
 	await expect(page.locator("#status-line")).not.toBeEmpty();
 	await expect(page.locator("#status .meta")).toContainText("complete word");
@@ -153,6 +175,7 @@ test("Build: block labels always show the real Kalaallisut spelling, and hide gr
 	expect(label).toContain("-qaq");
 	expect(label).not.toContain("N_qaq_Vb");
 
+	await openSettings(page);
 	await page.click("#opt-show-ids");
 	await page.waitForTimeout(400);
 	await page.locator('[role="treeitem"]').first().click({ force: true });
@@ -508,6 +531,7 @@ test("Deconstruct: reading-order toggle reverses the rows but never the composed
 	const firstRowEndingFirst = await page.locator("#primary-breakdown .breakdown-row").first().locator(".breakdown-spelling").textContent();
 	expect(firstRowEndingFirst).toContain("vunga");
 
+	await openSettings(page);
 	await page.click("#opt-reading-order"); // turn off -> stem-first
 	await page.waitForTimeout(300);
 	const firstRowAfterToggle = await page.locator("#primary-breakdown .breakdown-row").first().locator(".breakdown-spelling").textContent();
@@ -674,6 +698,20 @@ test("phone layout: display options collapse behind a toggle and the page does n
 	await expect(page.locator("#display-panel")).toBeVisible();
 	await choose(page, "#opt-lang", "da");
 	await expect(page.locator('#opt-lang [data-value="da"]')).toHaveAttribute("aria-checked", "true");
+});
+
+test("wide layout: gloss language stays in the compact bar and other options stay behind Settings", async ({ page }) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await page.reload();
+	await expect(page.locator("#status-line")).toContainText("Loaded", { timeout: 20_000 });
+	if (await page.locator("#display-panel").isVisible()) await page.click("#display-toggle");
+	await expect(page.locator("#opt-lang")).toBeVisible();
+	await expect(page.locator("#display-toggle")).toBeVisible();
+	await expect(page.locator("#display-panel")).toBeHidden();
+	await expect(page.locator("#opt-reading-order")).toBeHidden();
+	await page.click("#display-toggle");
+	await expect(page.locator("#opt-reading-order")).toBeVisible();
+	await expect(page.locator("#opt-spelling")).toBeVisible();
 });
 
 test("Build: pinch-to-zoom is enabled on the workspace (bl-oq-ly#20 -- Blockly doesn't turn this on by default)", async ({ page }) => {

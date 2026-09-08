@@ -70,3 +70,35 @@ test("labelFor: every real catalog preset, in every display-option combination, 
 	expect(result.presetCount).toBeGreaterThan(1000);
 	expect(result.failures).toEqual([]);
 });
+
+test("toolbox category ratchet: grouped categories retain source-entry coverage", async ({ page }) => {
+	await page.goto("/");
+	await expect(page.locator("#status-line")).toContainText("Loaded", { timeout: 20_000 });
+	const result = await page.evaluate(async () => {
+		const moduleUrl = (name) => new URL(name, document.baseURI).href;
+		const { buildToolbox } = await import(moduleUrl("blocks.js"));
+		const { mergeMorphemeSources, GRAMMAR_MORPHEMES_URL } = await import(moduleUrl("oq-api.js"));
+		const res = await fetch(GRAMMAR_MORPHEMES_URL);
+		if (!res.ok) throw new Error(`catalog fetch failed: ${res.status}`);
+		const value = await res.json();
+		const { presets } = mergeMorphemeSources([{ status: "fulfilled", value }], [{ buildable: true, source: "grammarian" }]);
+		const toolbox = buildToolbox(presets, { showIds: false });
+		return toolbox.contents.map((category) => category.name);
+	});
+
+	// Ratchet against the regression where hundreds of inflectional entries
+	// appeared as only three visible blocks. Update this threshold deliberately
+	// if the upstream schema intentionally changes, rather than silently
+	// accepting a local filtering regression.
+	const inflections = result.find((name) => name.startsWith("Inflectional endings"));
+	expect(inflections).toMatch(/^Inflectional endings \(\d+ entries · \d+ blocks\)$/);
+	const [, entryCount, blockCount] = inflections.match(/\((\d+) entries · (\d+) blocks\)$/);
+	// The published catalog varies as upstream entries are added or retired;
+	// keep this comfortably below the current 354-entry floor while still
+	// failing loudly if the category is accidentally reduced to a small sample.
+	expect(Number(entryCount)).toBeGreaterThanOrEqual(300);
+	expect(Number(blockCount)).toBeGreaterThanOrEqual(2);
+	for (const category of ["Stems — nouns", "Stems — verbs", "Derivational affixes", "Enclitics", "Sentential affixes"]) {
+		expect(result.some((name) => name.startsWith(`${category} (`))).toBe(true);
+	}
+});

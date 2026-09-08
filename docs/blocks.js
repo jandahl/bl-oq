@@ -229,7 +229,7 @@ export function defineMorphemeBlocks() {
 					.appendField(new Blockly.FieldLabelSerializable(""), "LABEL");
 				if (cat.id === "stem_n") {
 					this.appendDummyInput("PRESENTATION")
-						.appendField("translation")
+						.appendField(`${UI_INDENT}translation`)
 						.appendField(new Blockly.FieldDropdown(NOUN_PRESENTATION_OPTIONS), "PRESENTATION");
 				}
 				this.setPreviousStatement(
@@ -258,6 +258,11 @@ function isNounEndingPreset(preset) {
 	return Boolean(parseNominalCoordinate(preset)) && !isVerbEndingPreset(preset);
 }
 
+function isZeroEndingPreset(preset) {
+	return preset?.morpheme_type === "inflectional_ending"
+		&& (preset.expected === "Ø" || preset.seq?.[0]?.text === "" || preset.seq?.[0]?.text === "Ø");
+}
+
 export function defineNounEndingPickerBlock(nounEndingIndex, presetsById, getDisplayOptions) {
 	const options = (values, labels = values) => (values.length ? values.map((value, i) => [labels[i] ?? value, value]) : [["—", "NONE"]]);
 	const resolveFor = (block) => {
@@ -275,10 +280,10 @@ export function defineNounEndingPickerBlock(nounEndingIndex, presetsById, getDis
 			this.nounEndingPickerState = { candidates: [] };
 			this.appendDummyInput("RESOLVED").appendField(new Blockly.FieldLabelSerializable(""), "RESOLVED");
 			const changed = function () { const block = this.getSourceBlock(); if (block) resolveFor(block); };
-			this.appendDummyInput().appendField("Case").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.cases), changed), "CASE");
-			this.appendDummyInput().appendField("Possessor").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.possessors), changed), "POSSESSOR");
-			this.appendDummyInput().appendField("Number").appendField(new Blockly.FieldDropdown(options(nounEndingIndex.numbers), changed), "NUMBER");
-			this.appendDummyInput("VARIANT").appendField("Variant").appendField(new Blockly.FieldDropdown(function () { return this.getSourceBlock()?.nounEndingPickerState?.candidates ?? [["—", "NONE"]]; }, changed), "VARIANT");
+			this.appendDummyInput().appendField(`${UI_INDENT}Case`).appendField(new Blockly.FieldDropdown(options(nounEndingIndex.cases), changed), "CASE");
+			this.appendDummyInput().appendField(`${UI_INDENT}Possessor`).appendField(new Blockly.FieldDropdown(options(nounEndingIndex.possessors), changed), "POSSESSOR");
+			this.appendDummyInput().appendField(`${UI_INDENT}Number`).appendField(new Blockly.FieldDropdown(options(nounEndingIndex.numbers), changed), "NUMBER");
+			this.appendDummyInput("VARIANT").appendField(`${UI_INDENT}Variant`).appendField(new Blockly.FieldDropdown(function () { return this.getSourceBlock()?.nounEndingPickerState?.candidates ?? [["—", "NONE"]]; }, changed), "VARIANT");
 			this.setPreviousStatement(true, CONNECTION_TYPE);
 			this.setNextStatement(true, CONNECTION_TYPE);
 			this.setStyle(INFLECTION_BLOCK_STYLE);
@@ -654,10 +659,14 @@ function restoreVerbPickerFields(workspace, block, preset) {
  */
 export function buildToolbox(presets, displayOptions = {}, { includeVerbPicker = true } = {}) {
 	const byCategoryName = new Map();
-	const hasStructuredNounEndings = presets.some(isNounEndingPreset);
+	const hasStructuredNounEndings = presets.some((preset) => !isZeroEndingPreset(preset) && isNounEndingPreset(preset));
+	const omittedByCategory = new Map();
 	for (const preset of presets) {
-		if (isVerbEndingPreset(preset)) continue;
-		if (isNounEndingPreset(preset)) continue;
+		if (isZeroEndingPreset(preset)) continue;
+		if (isVerbEndingPreset(preset) || isNounEndingPreset(preset)) {
+			omittedByCategory.set("Inflectional endings", (omittedByCategory.get("Inflectional endings") ?? 0) + 1);
+			continue;
+		}
 		const cat = categoryForPreset(preset);
 		if (!byCategoryName.has(cat.name)) byCategoryName.set(cat.name, { ...cat, presets: [] });
 		byCategoryName.get(cat.name).presets.push(preset);
@@ -692,7 +701,9 @@ export function buildToolbox(presets, displayOptions = {}, { includeVerbPicker =
 			}
 			return {
 				kind: "category",
-				name: `${cat.name} (${blocks.length})`,
+				name: omittedByCategory.has(cat.name)
+					? `${cat.name} (${cat.presets.length + omittedByCategory.get(cat.name)} entries · ${blocks.length} blocks)`
+					: `${cat.name} (${blocks.length})`,
 				categorystyle: `${cat.colourClass}_category`,
 				contents: blocks,
 			};
@@ -756,6 +767,7 @@ export function renderChain(workspace, ids, presetsById, displayOptions) {
 	for (const id of ids) {
 		const preset = presetsById.get(id);
 		if (!preset) continue;
+		if (isZeroEndingPreset(preset)) continue;
 		const isVerbEnding = isVerbEndingPreset(preset);
 		const isNounEnding = isNounEndingPreset(preset);
 		const block = workspace.newBlock(isVerbEnding ? VERB_ENDING_PICKER_TYPE : isNounEnding ? NOUN_ENDING_PICKER_TYPE : blockTypeForCategory(categoryForPreset(preset)));

@@ -10,7 +10,7 @@ import { buildBlocklyThemes } from "./theme.js";
 import { composedTranslation } from "./gloss.js";
 import { readState, writeState } from "./router.js";
 import { loadWorkedExamples } from "./worked-examples.js";
-import { setLocale, applyLocale } from "./i18n.js";
+import { setLocale, applyLocale, t } from "./i18n.js";
 
 /** Radiogroup of [role=radio][data-value] buttons that behaves like a <select>
  *  (.value getter/setter + change events) so displayOptions() stays unchanged. */
@@ -18,7 +18,9 @@ function enhanceSegmented(root) {
 	const buttons = () => [...root.querySelectorAll('[role="radio"]')];
 	const apply = (value) => {
 		for (const btn of buttons()) {
-			btn.setAttribute("aria-checked", btn.dataset.value === value ? "true" : "false");
+			const selected = btn.dataset.value === value;
+			btn.setAttribute("aria-checked", selected ? "true" : "false");
+			btn.tabIndex = selected ? 0 : -1;
 		}
 		root.dataset.value = value;
 	};
@@ -37,6 +39,25 @@ function enhanceSegmented(root) {
 		if (root.value === btn.dataset.value) return;
 		root.value = btn.dataset.value;
 		root.dispatchEvent(new Event("change", { bubbles: true }));
+	});
+	root.addEventListener("keydown", (event) => {
+		const current = event.target.closest('[role="radio"]');
+		if (!current || !root.contains(current)) return;
+		const options = buttons();
+		const index = options.indexOf(current);
+		const nextIndex = event.key === "ArrowRight" || event.key === "ArrowDown" ? (index + 1) % options.length
+			: event.key === "ArrowLeft" || event.key === "ArrowUp" ? (index - 1 + options.length) % options.length
+			: event.key === "Home" ? 0
+			: event.key === "End" ? options.length - 1
+			: -1;
+		if (nextIndex < 0) return;
+		event.preventDefault();
+		const next = options[nextIndex];
+		next.focus();
+		if (root.value !== next.dataset.value) {
+			root.value = next.dataset.value;
+			root.dispatchEvent(new Event("change", { bubbles: true }));
+		}
 	});
 	apply(root.value);
 	return root;
@@ -182,6 +203,7 @@ function initDisplayOptions() {
 		localStorage.setItem("bl-oq-ly:ui-lang", uiLangSelect.value);
 		setLocale(uiLangSelect.value);
 		applyLocale();
+		applyTheme(document.documentElement.dataset.theme || "auto");
 	});
 	showIdsCheckbox.addEventListener("change", () => {
 		localStorage.setItem(SHOW_IDS_KEY, String(showIdsCheckbox.checked));
@@ -279,11 +301,6 @@ const DISPLAY_MQ = window.matchMedia("(min-width: 720px)");
 
 function initDisplayChrome() {
 	function sync() {
-		if (DISPLAY_MQ.matches) {
-			displayPanel.classList.add("is-open");
-			displayToggleBtn.setAttribute("aria-expanded", "true");
-			return;
-		}
 		if (displayToggleBtn.dataset.userToggled === "true") return;
 		displayPanel.classList.remove("is-open");
 		displayToggleBtn.setAttribute("aria-expanded", "false");
@@ -294,10 +311,7 @@ function initDisplayChrome() {
 		displayToggleBtn.dataset.userToggled = "true";
 		displayToggleBtn.setAttribute("aria-expanded", String(open));
 	});
-	DISPLAY_MQ.addEventListener("change", () => {
-		if (!DISPLAY_MQ.matches) displayToggleBtn.dataset.userToggled = "";
-		sync();
-	});
+	DISPLAY_MQ.addEventListener("change", sync);
 	sync();
 }
 
@@ -336,7 +350,7 @@ function rebuildWorkspace() {
 function applyTheme(theme) {
 	if (theme === "auto") delete document.documentElement.dataset.theme;
 	else document.documentElement.dataset.theme = theme;
-	themeToggleBtn.textContent = `Theme: ${theme[0].toUpperCase()}${theme.slice(1)}`;
+	themeToggleBtn.textContent = t(`theme.${theme}`);
 	syncBlocklyTheme();
 }
 
@@ -596,7 +610,7 @@ async function main() {
 	setStatus(`Loaded ${presets.length} morphemes.${authNote}`, "");
 
 	if (!paletteVisible) {
-		paletteToggleBtn.textContent = "Show palette";
+		paletteToggleBtn.textContent = t("paletteShow");
 		filterWrap.hidden = true;
 		applyToolbox();
 	}
@@ -620,7 +634,7 @@ async function main() {
 
 	paletteToggleBtn.addEventListener("click", () => {
 		paletteVisible = !paletteVisible;
-		paletteToggleBtn.textContent = paletteVisible ? "Hide palette" : "Show palette";
+		paletteToggleBtn.textContent = t(paletteVisible ? "paletteHide" : "paletteShow");
 		filterWrap.hidden = !paletteVisible;
 		applyToolbox();
 		requestAnimationFrame(() => Blockly.svgResize(workspace));
