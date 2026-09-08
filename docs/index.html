@@ -78,31 +78,42 @@
 		</section>
 
 		<section class="page-section build-section" aria-labelledby="build-heading">
-			<h2 id="build-heading" data-i18n="buildHeading">Build a word</h2>
-			<p class="section-instruction" data-i18n="buildInstruction">Choose a category, then drag a block onto the canvas.</p>
-		<div class="palette-controls">
-			<button id="palette-toggle" type="button" data-i18n="paletteHide">Hide palette</button>
-			<div class="clearable" id="morpheme-filter-wrap">
-				<input id="morpheme-filter" type="text" placeholder="Filter by Kalaallisut form, id, or gloss…" autocomplete="off" spellcheck="false" />
-				<button type="button" class="clear-field" id="morpheme-filter-clear" hidden aria-label="Clear filter" data-i18n-aria-label="clearFilter">×</button>
+			<div class="build-heading-row">
+				<div>
+					<h2 id="build-heading" data-i18n="buildHeading">Build a word</h2>
+					<p class="section-instruction" data-i18n="buildInstruction">Choose a category, then drag a block onto the canvas — or try an example below.</p>
+				</div>
+				<div class="build-actions">
+					<button id="copy-link-btn" class="theme-toggle" type="button" data-i18n="copyLink">Copy link</button>
+					<button id="clear-canvas-btn" class="theme-toggle" type="button" data-i18n="clearCanvas">Clear canvas</button>
+				</div>
 			</div>
-		</div>
 
-		<div id="blockly-div"></div>
-		</section>
+			<section id="example-words" class="build-examples" aria-labelledby="example-words-heading">
+				<div class="build-examples-head">
+					<h3 id="example-words-heading" data-i18n="tryExample">Try an example</h3>
+					<button id="worked-examples-btn" type="button" data-i18n="extendedExamples">Extended examples</button>
+				</div>
+				<p class="section-instruction" data-i18n="exampleDescription">Deconstructs the word and drops the verified chain onto the canvas.</p>
+				<div class="example-word-list">
+					<button type="button" data-example-word="qimmeq" data-example-class="noun">qimmeq</button>
+					<button type="button" data-example-word="aallarpoq" data-example-class="verb">aallarpoq</button>
+					<button type="button" data-example-word="qimmeqarpoq" data-example-class="derivational affix">qimmeqarpoq</button>
+					<button type="button" data-example-word="qimmeqarpunga" data-example-class="inflectional ending">qimmeqarpunga</button>
+					<button type="button" data-example-word="qimmequna" data-example-class="enclitic">qimmequna</button>
+					<button type="button" data-example-word="takuvakkit" data-example-class="transitive verb">takuvakkit</button>
+				</div>
+			</section>
 
-		<section id="example-words" class="page-section" aria-labelledby="example-words-heading">
-			<h2 id="example-words-heading" data-i18n="tryExample">Try an example</h2>
-			<p data-i18n="exampleDescription">Deconstructs the word and drops the verified chain onto the canvas.</p>
-			<div class="example-word-list">
-				<button type="button" data-example-word="qimmeq" data-example-class="noun">qimmeq</button>
-				<button type="button" data-example-word="aallarpoq" data-example-class="verb">aallarpoq</button>
-				<button type="button" data-example-word="qimmeqarpoq" data-example-class="derivational affix">qimmeqarpoq</button>
-				<button type="button" data-example-word="qimmeqarpunga" data-example-class="inflectional ending">qimmeqarpunga</button>
-				<button type="button" data-example-word="qimmequna" data-example-class="enclitic">qimmequna</button>
-				<button type="button" data-example-word="takuvakkit" data-example-class="transitive verb">takuvakkit</button>
+			<div class="palette-controls">
+				<button id="palette-toggle" type="button" data-i18n="paletteHide">Hide palette</button>
+				<div class="clearable" id="morpheme-filter-wrap">
+					<input id="morpheme-filter" type="text" data-i18n-placeholder="paletteFilter" placeholder="Filter by Kalaallisut form, id, or gloss…" autocomplete="off" spellcheck="false" />
+					<button type="button" class="clear-field" id="morpheme-filter-clear" hidden aria-label="Clear filter" data-i18n-aria-label="clearFilter">×</button>
+				</div>
 			</div>
-			<button id="worked-examples-btn" type="button" data-i18n="extendedExamples">Extended examples</button>
+
+			<div id="blockly-div"></div>
 		</section>
 	</main>
 
