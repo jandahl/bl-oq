@@ -80,9 +80,9 @@ test("word and filter fields have a clear button that empties them", async ({ pa
 	await expect(page.locator("#morpheme-filter-clear")).toBeHidden();
 });
 
-test("credits point at oq-api on GitHub Pages, not the private oq repo", async ({ page }) => {
-	const link = page.locator("footer a", { hasText: /^oq-api$/ });
-	await expect(link).toHaveAttribute("href", "https://jandahl.github.io/oq-api/");
+test("footer stays learner-facing and does not expose repository implementation details", async ({ page }) => {
+	await expect(page.locator("footer")).toContainText("experimental learning tool");
+	await expect(page.locator("footer a")).toHaveCount(0);
 });
 
 test("Deconstruct: example words load into the analyzer", async ({ page }) => {
@@ -120,13 +120,17 @@ test("Deconstruct: oq CI worked examples open in a filterable modal", async ({ p
 	await expect(modal).toBeHidden();
 });
 
-async function dragFirstFlyoutBlockIntoWorkspace(page, categoryLabelText, dropX, dropY) {
+async function dragFirstFlyoutBlockIntoWorkspace(page, categoryLabelText) {
 	const category = page.locator('[role="treeitem"]').filter({ hasText: categoryLabelText }).first();
 	await category.click({ force: true });
 	await page.waitForTimeout(400);
 	const block = page.locator(".blocklyFlyout .blocklyDraggable").first();
 	const box = await block.boundingBox();
 	if (!box) throw new Error("flyout block has no bounding box");
+	const workspaceBox = await page.locator("#blockly-div").boundingBox();
+	if (!workspaceBox) throw new Error("workspace has no bounding box");
+	const dropX = workspaceBox.x + workspaceBox.width * 0.65;
+	const dropY = workspaceBox.y + workspaceBox.height * 0.25;
 	await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
 	await page.mouse.down();
 	await page.mouse.move(dropX, dropY, { steps: 10 });
@@ -135,7 +139,7 @@ async function dragFirstFlyoutBlockIntoWorkspace(page, categoryLabelText, dropX,
 }
 
 test("Build: dragging a single stem in produces a complete-word status (regression guard: buildWord() wiring)", async ({ page }) => {
-	await dragFirstFlyoutBlockIntoWorkspace(page, "Stems — nouns", 250, 120);
+	await dragFirstFlyoutBlockIntoWorkspace(page, "Stems — nouns");
 	await expect(page.locator("#status")).toHaveClass(/ok/);
 	await expect(page.locator("#status-line")).not.toBeEmpty();
 	await expect(page.locator("#status .meta")).toContainText("complete word");
