@@ -72,9 +72,12 @@ test("labelFor: every real catalog preset, in every display-option combination, 
 });
 
 test("toolbox category ratchet: grouped categories retain source-entry coverage", async ({ page }) => {
+	await page.goto("/");
+	await expect(page.locator("#status-line")).toContainText("Loaded", { timeout: 20_000 });
 	const result = await page.evaluate(async () => {
-		const { buildToolbox } = await import("/blocks.js");
-		const { mergeMorphemeSources, GRAMMAR_MORPHEMES_URL } = await import("/oq-api.js");
+		const moduleUrl = (name) => new URL(name, document.baseURI).href;
+		const { buildToolbox } = await import(moduleUrl("blocks.js"));
+		const { mergeMorphemeSources, GRAMMAR_MORPHEMES_URL } = await import(moduleUrl("oq-api.js"));
 		const res = await fetch(GRAMMAR_MORPHEMES_URL);
 		if (!res.ok) throw new Error(`catalog fetch failed: ${res.status}`);
 		const value = await res.json();
