@@ -15,6 +15,7 @@ const browserGlobals = {
 	Event: "readonly",
 	console: "readonly",
 	location: "readonly",
+	navigator: "readonly",
 	history: "readonly",
 	URLSearchParams: "readonly",
 	// Loaded globally via <script> tags in index.html (blockly_compressed.js
