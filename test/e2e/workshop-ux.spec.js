@@ -16,7 +16,7 @@ test("Copy link writes the current share URL to the clipboard", async ({ page, c
 	await expect(page.locator("#status-line")).not.toContainText("Analyzing", { timeout: 30_000 });
 	await page.getByRole("button", { name: "Copy link" }).click();
 	await expect(page.getByRole("button", { name: "Copied" })).toBeVisible();
-	const text = await page.evaluate(() => navigator.clipboard.readText());
+	const text = await page.evaluate(() => window.navigator.clipboard.readText());
 	expect(text).toMatch(/[?&](w=qimmeqarpunga|chain=)/);
 });
 
@@ -35,7 +35,7 @@ test("examples sit in the Build section above the Blockly canvas", async ({ page
 		if (!build || !examples || !blockly) return "missing";
 		if (!build.contains(examples) || !build.contains(blockly)) return "missing";
 		const pos = examples.compareDocumentPosition(blockly);
-		return (pos & Node.DOCUMENT_POSITION_FOLLOWING) ? "examples-before-blockly" : "wrong-order";
+		return (pos & 4)/* DOCUMENT_POSITION_FOLLOWING */ ? "examples-before-blockly" : "wrong-order";
 	});
 	expect(order).toBe("examples-before-blockly");
 });
