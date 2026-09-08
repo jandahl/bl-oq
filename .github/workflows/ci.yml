@@ -42,20 +42,3 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
-
-  deploy-pages:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    needs: [lint-and-unit, e2e]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - name: Publish docs to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: bl-oq-ly
-          directory: docs
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
