@@ -1,25 +1,25 @@
 const messages = {
 	en: {
-		"app.title": "bl-oq-ly", "theme.auto": "Theme: Auto", "display": "Display",
-		"subtitle": "A block-based learning aid for building and taking apart Kalaallisut words. Prototype — nothing here is authoritative.",
-		"attested": "Attested word", "deconstruct": "Deconstruct", "glossLanguage": "Gloss language",
-		"english": "English", "danish": "Dansk", "both": "Both", "morphemeLabels": "Morpheme labels",
+		"app.title": "bl-oq-ly", "theme.auto": "Theme: Auto", "theme.light": "Theme: Light", "theme.dark": "Theme: Dark", "display": "Settings", "settingsHeading": "Display and language",
+		"subtitle": "A block-based learning aid for building and taking apart Kalaallisut words. Prototype — nothing here is authoritative.", "analyzeHeading": "Analyze a word", "buildHeading": "Build a word", "buildInstruction": "Choose a category, then drag a block onto the canvas.",
+		"attested": "Attested word", "deconstruct": "Deconstruct", "glossLanguage": "Gloss language", "wordPlaceholder": "e.g. qimmeqarpunga", "clearWord": "Clear word", "clearFilter": "Clear filter",
+		"english": "English", "danish": "Dansk", "both": "Both", "uiLanguage": "UI language", "morphemeLabels": "Morpheme labels",
 		"formGloss": "Form + gloss", "formOnly": "Form only", "glossOnly": "Gloss only", "blockStyle": "Block style",
 		"classic": "Classic", "zelos": "Zelos", "showIds": "Add internal API ids", "readLast": "Read last morpheme first",
-		"paletteHide": "Hide palette", "paletteFilter": "Filter by Kalaallisut form, id, or gloss…",
+		"paletteHide": "Hide palette", "paletteShow": "Show palette", "paletteFilter": "Filter by Kalaallisut form, id, or gloss…",
 		"tryExample": "Try an example", "exampleDescription": "Deconstructs the word and drops the verified chain onto the canvas.",
-		"extendedExamples": "Extended examples", "loading": "Loading morpheme catalog…", "morphemeChain": "Morpheme chain",
+		"extendedExamples": "Extended examples", "loading": "Loading morpheme catalog…", "morphemeChain": "Morpheme chain", "footerText": "An experimental learning tool for exploring Kalaallisut word structure.",
 	},
 	da: {
-		"app.title": "bl-oq-ly", "theme.auto": "Tema: Automatisk", "display": "Visning",
-		"subtitle": "Et blokbaseret læringsværktøj til at bygge og analysere kalaallisut-ord. Prototype — intet her er autoritativt.",
-		"attested": "Attesteret ord", "deconstruct": "Dekonstruér", "glossLanguage": "Glossprog",
-		"english": "English", "danish": "Dansk", "both": "Begge", "morphemeLabels": "Morfemlabels",
+		"app.title": "bl-oq-ly", "theme.auto": "Tema: Automatisk", "theme.light": "Tema: Lys", "theme.dark": "Tema: Mørk", "display": "Indstillinger", "settingsHeading": "Visning og sprog",
+		"subtitle": "Et blokbaseret læringsværktøj til at bygge og analysere kalaallisut-ord. Prototype — intet her er autoritativt.", "analyzeHeading": "Analysér et ord", "buildHeading": "Byg et ord", "buildInstruction": "Vælg en kategori, og træk derefter en blok over på lærredet.",
+		"attested": "Attesteret ord", "deconstruct": "Dekonstruér", "glossLanguage": "Glossprog", "wordPlaceholder": "f.eks. qimmeqarpunga", "clearWord": "Ryd ord", "clearFilter": "Ryd filter",
+		"english": "English", "danish": "Dansk", "both": "Begge", "uiLanguage": "Brugerfladesprog", "morphemeLabels": "Morfemlabels",
 		"formGloss": "Form + gloss", "formOnly": "Kun form", "glossOnly": "Kun gloss", "blockStyle": "Blokstil",
 		"classic": "Klassisk", "zelos": "Zelos", "showIds": "Tilføj interne API-id'er", "readLast": "Læs sidste morfem først",
-		"paletteHide": "Skjul palette", "paletteFilter": "Filtrér efter kalaallisut-form, id eller gloss…",
+		"paletteHide": "Skjul palette", "paletteShow": "Vis palette", "paletteFilter": "Filtrér efter kalaallisut-form, id eller gloss…",
 		"tryExample": "Prøv et eksempel", "exampleDescription": "Analyserer ordet og lægger den verificerede kæde på lærredet.",
-		"extendedExamples": "Udvidede eksempler", "loading": "Indlæser morfemkatalog…", "morphemeChain": "Morfemkæde",
+		"extendedExamples": "Udvidede eksempler", "loading": "Indlæser morfemkatalog…", "morphemeChain": "Morfemkæde", "footerText": "Et eksperimentelt læringsværktøj til at udforske kalaallisut-ords struktur.",
 	},
 };
 
@@ -31,4 +31,5 @@ export function applyLocale(root = typeof document === "undefined" ? null : docu
 	if (!root) return;
 	root.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
 	root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+	root.querySelectorAll("[data-i18n-aria-label]").forEach((el) => { el.setAttribute("aria-label", t(el.dataset.i18nAriaLabel)); });
 }

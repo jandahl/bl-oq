@@ -55,6 +55,7 @@ test("a collapsed analysis stays collapsed when display options change", async (
 	await page.locator("#breakdown-summary").click();
 	await expect(page.locator("#breakdown-details")).not.toHaveAttribute("open");
 
+	if (await page.locator("#display-panel").isHidden()) await page.click("#display-toggle");
 	await page.click("#opt-reading-order");
 	await expect(page.locator("#breakdown-details")).not.toHaveAttribute("open");
 	await expect(page.locator("#primary-breakdown")).toBeHidden();

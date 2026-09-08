@@ -12,7 +12,12 @@
 import { test, expect } from "@playwright/test";
 
 /** Gloss language / morpheme labels / block style are segmented radios, not <select>s. */
+async function openSettings(page) {
+	if (await page.locator("#display-panel").isHidden()) await page.click("#display-toggle");
+}
+
 async function choose(page, group, value) {
+	if (group !== "#opt-lang") await openSettings(page);
 	await page.locator(`${group} [data-value="${value}"]`).click();
 }
 
@@ -40,16 +45,25 @@ test.beforeEach(async ({ page }) => {
 	});
 	await page.goto("/");
 	await expect(page.locator("#status-line")).toContainText("Loaded", { timeout: 20_000 });
-	// Most historical tests exercise a display control directly. Keep those
-	// tests focused on their behavior; the responsive tests below explicitly
-	// verify the panel's collapsed state.
-	if (await page.locator("#display-panel").isHidden()) await page.click("#display-toggle");
 });
 
 test("catalog loads with a real morpheme count and surfaces the non-authoritative note", async ({ page }) => {
 	const status = await page.textContent("#status-line");
 	expect(status).toMatch(/Loaded \d{3,} morphemes\./);
 	expect(status).toContain("hand-authored, not yet dictionary-verified");
+});
+
+test("display segmented controls support keyboard navigation", async ({ page }) => {
+	await page.click("#display-toggle");
+	const spelling = page.locator("#opt-spelling [role=radio]");
+	await spelling.first().focus();
+	await page.keyboard.press("ArrowRight");
+	await expect(spelling.nth(1)).toHaveAttribute("aria-checked", "true");
+	await expect(spelling.nth(1)).toBeFocused();
+	await expect(spelling.nth(0)).toHaveAttribute("aria-checked", "false");
+	await page.keyboard.press("End");
+	await expect(spelling.last()).toBeFocused();
+	await expect(spelling.last()).toHaveAttribute("aria-checked", "true");
 });
 
 test("word and filter fields have a clear button that empties them", async ({ page }) => {
@@ -157,6 +171,7 @@ test("Build: block labels always show the real Kalaallisut spelling, and hide gr
 	expect(label).toContain("-qaq");
 	expect(label).not.toContain("N_qaq_Vb");
 
+	await openSettings(page);
 	await page.click("#opt-show-ids");
 	await page.waitForTimeout(400);
 	await page.locator('[role="treeitem"]').first().click({ force: true });
@@ -512,6 +527,7 @@ test("Deconstruct: reading-order toggle reverses the rows but never the composed
 	const firstRowEndingFirst = await page.locator("#primary-breakdown .breakdown-row").first().locator(".breakdown-spelling").textContent();
 	expect(firstRowEndingFirst).toContain("vunga");
 
+	await openSettings(page);
 	await page.click("#opt-reading-order"); // turn off -> stem-first
 	await page.waitForTimeout(300);
 	const firstRowAfterToggle = await page.locator("#primary-breakdown .breakdown-row").first().locator(".breakdown-spelling").textContent();
