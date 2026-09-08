@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readState, writeState } from "../../docs/router.js";
+import { readState, writeState, routeForState } from "../../docs/router.js";
 
 test("readState: a bare/empty search string falls back to build mode, no word, no chain", () => {
 	assert.deepEqual(readState(""), { mode: "build", word: "", chain: [] });
@@ -12,12 +12,18 @@ test("readState: an invalid/unrecognized mode value falls back to build rather t
 	assert.equal(readState("?mode=").mode, "build");
 });
 
-test("readState: reads mode/word/chain from a real query string", () => {
-	assert.deepEqual(readState("?mode=deconstruct&word=qimmeqarpunga"), {
+test("readState: reads the canonical single-page query string", () => {
+	assert.deepEqual(readState("?w=qimmeqarpunga"), {
 		mode: "deconstruct", word: "qimmeqarpunga", chain: [],
 	});
 	assert.deepEqual(readState("?chain=qimmeq,N_qaq_Vb,V_IND_INTR_1SG"), {
 		mode: "build", word: "", chain: ["qimmeq", "N_qaq_Vb", "V_IND_INTR_1SG"],
+	});
+});
+
+test("readState: accepts the old mode/word link format", () => {
+	assert.deepEqual(readState("?mode=deconstruct&word=qimmeqarpunga"), {
+		mode: "deconstruct", word: "qimmeqarpunga", chain: [],
 	});
 });
 
@@ -31,8 +37,9 @@ test("writeState: entirely-default state produces an empty string, not a query s
 	assert.equal(writeState(), "");
 });
 
-test("writeState: only emits the params that differ from default", () => {
-	assert.equal(writeState({ mode: "deconstruct", word: "", chain: [] }), "?mode=deconstruct");
+test("writeState: only emits the active mode's params", () => {
+	assert.equal(writeState({ mode: "deconstruct", word: "", chain: [] }), "");
+	assert.equal(writeState({ mode: "deconstruct", word: "qimmeqarpunga", chain: ["stale"] }), "?w=qimmeqarpunga");
 	assert.equal(writeState({ mode: "build", word: "", chain: ["qimmeq"] }), "?chain=qimmeq");
 });
 
@@ -57,27 +64,8 @@ test("writeState: a word containing characters that need percent-encoding (e.g. 
 	assert.deepEqual(readState(writeState(state)), state);
 });
 
-test("writeState keeps both word and chain so tab switches do not drop the other tab", () => {
-	const qs = writeState({
-		mode: "deconstruct",
-		word: "qimmeqarpunga",
-		chain: ["qimmeq", "N_qaq_Vb"],
-	});
-	assert.equal(qs.includes("mode=deconstruct"), true);
-	assert.equal(qs.includes("word=qimmeqarpunga"), true);
-	assert.equal(qs.includes("chain="), true);
-	assert.deepEqual(readState(qs), {
-		mode: "deconstruct",
-		word: "qimmeqarpunga",
-		chain: ["qimmeq", "N_qaq_Vb"],
-	});
-});
-
-test("writeState/readState round-trip with both tabs populated", () => {
-	const state = {
-		mode: "build",
-		word: "qimmeq",
-		chain: ["qimmeq", "N_qaq_Vb", "V_IND_INTR_1SG"],
-	};
-	assert.deepEqual(readState(writeState(state)), state);
+test("routeForState: always uses the single-page route and preserves the site base path", () => {
+	assert.equal(routeForState("/"), "/");
+	assert.equal(routeForState("/deconstruct/"), "/");
+	assert.equal(routeForState("/bl-oq-ly/"), "/bl-oq-ly/");
 });

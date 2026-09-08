@@ -649,12 +649,12 @@ test("Shareable links: building a chain live-updates the URL, and reloading a ch
 	await page2.close();
 });
 
-test("Shareable links: a verified Deconstruct result pushes word+chain into the URL, and reloading it restores the analysis on the canvas (router.js)", async ({ page }) => {
+test("Shareable links: a verified Deconstruct result pushes only its word into the URL, and reloading it restores the analysis (router.js)", async ({ page }) => {
 	await page.fill("#word-input", "qimmeqarpunga");
 	await page.click("#analyze-btn");
 	await expect(page.locator("#primary-breakdown .breakdown-word")).toHaveText("qimmeqarpunga", { timeout: 15_000 });
-	await expect.poll(() => page.evaluate(() => location.search)).toContain("word=qimmeqarpunga");
-	await expect.poll(() => page.evaluate(() => location.search)).toContain("chain=");
+	await expect.poll(() => page.evaluate(() => location.search)).toBe("?w=qimmeqarpunga");
+	await expect.poll(() => page.evaluate(() => location.href)).not.toContain("deconstruct");
 
 	const shareUrl = await page.evaluate(() => location.href);
 	const page2 = await page.context().newPage();

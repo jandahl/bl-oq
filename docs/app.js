@@ -8,7 +8,7 @@ import {
 import { renderBreakdown, renderAlternativeBreakdowns } from "./breakdown.js";
 import { buildBlocklyThemes } from "./theme.js";
 import { composedTranslation } from "./gloss.js";
-import { readState, writeState } from "./router.js";
+import { readState, writeState, routeForState } from "./router.js";
 import { loadWorkedExamples } from "./worked-examples.js";
 import { setLocale, applyLocale, t } from "./i18n.js";
 
@@ -383,12 +383,10 @@ function setStatus(text, kind, meta) {
 	}
 }
 
-// --- Shareable-link state (router.js). The URL carries both the canvas
-// chain and the analyzed word together so a copy of the address bar
-// restores the same workshop view. Build's canvas still replaceState-syncs
-// on every change (too frequent for real history entries); a successful
-// Deconstruct pushes a real history entry. `mode` is still written for
-// older `?mode=deconstruct&word=…` links; there is no tab UI anymore.
+// --- Shareable-link state (router.js). The single-page URL uses `chain` for
+// the Build canvas and `w` for a Deconstruct word. Build still
+// replaceState-syncs on every canvas change; a successful Deconstruct pushes
+// a real history entry. Legacy mode/word links remain readable.
 function currentShareState() {
 	const chains = workspace ? topLevelChains(workspace) : [];
 	const word = lastDeconstructWord || wordInput.value.trim();
@@ -400,7 +398,8 @@ function currentShareState() {
 }
 
 function syncURL({ push = false } = {}) {
-	const url = location.pathname + writeState(currentShareState()) + location.hash;
+	const state = currentShareState();
+	const url = routeForState(location.pathname) + writeState(state) + location.hash;
 	if (push) history.pushState(null, "", url);
 	else history.replaceState(null, "", url);
 }

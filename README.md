@@ -146,18 +146,13 @@ screen, so copying it hands someone else the exact same view:
 - **Build**: the on-canvas chain — `?chain=qimmeq,N_qaq_Vb,V_IND_INTR_1SG`.
   Kept live via `history.replaceState` on every canvas change (no history
   spam from every drag).
-- **Deconstruct**: the analyzed word, once a verified breakdown is found,
-  together with the chain dropped onto the canvas —
-  `?mode=deconstruct&word=qimmeqarpunga&chain=qimmeq,N_qaq_Vb,V_IND_INTR_1SG`.
-  Pushed via `history.pushState` (a real, Back/Forward-navigable moment),
-  not on every keystroke or a failed/no-match attempt. Older
-  `?mode=deconstruct&word=…` links still restore: the analysis re-runs and
-  the chain is populated automatically.
-
+- **Deconstruct**: the analyzed word, once a verified breakdown is found —
+  `/?w=qimmeqarpunga`. Pushed via `history.pushState`
+  (a real, Back/Forward-navigable moment), not on every keystroke or a
+  failed/no-match attempt.
 Loading either kind of link restores it automatically: a `chain` link
-rebuilds the same stack via `renderChain()`; a `word=…` link re-runs the
-analysis and (unless a chain is already in the URL) drops it on the canvas.
-A bare `/` (nothing to restore) is left alone
+rebuilds the same stack via `renderChain()`; a `?w=...`
+link re-runs the analysis. A bare `/` (nothing to restore) is left alone
 entirely, so the ordinary "Loaded N morphemes" startup message isn't
 immediately overwritten by Build's own empty-canvas status.
 

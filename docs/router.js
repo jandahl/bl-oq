@@ -1,14 +1,12 @@
-// Encodes/decodes bl-oq-ly's shareable state -- mode, Deconstruct's word,
-// Build's block chain -- to and from the URL's query string, so a learner
+// Encodes/decodes bl-oq-ly's shareable state -- route, Deconstruct's word,
+// Build's block chain -- to and from the URL, so a learner
 // can copy the address bar and hand someone else the exact same view:
 // "look at this word", "look at how I built this".
 //
-// Both `word` and `chain` are kept when present, even if they belong to the
-// inactive tab. Dropping the other tab's param on a mode switch is what made
-// Build's stack (or Deconstruct's analysis) vanish the moment you clicked
-// the other tab and came back — the URL forgot it, and a restore had
-// nothing to put back. A link may therefore carry both; the active `mode`
-// still decides which view is showing.
+// The URL is a single-page state: `w` identifies a Deconstruct word and
+// `chain` identifies a Build canvas. The active mode owns its parameter, so
+// an automatic Deconstruct result does not leak its morpheme IDs into the
+// copied link.
 //
 // Deliberately NOT included: theme, language, spelling mode, show-ids,
 // reading order (app.js's own localStorage-backed *_KEY constants). Those
@@ -21,8 +19,6 @@
 // Pure functions only (no DOM/history access) so this module stays plain
 // Node-testable, same discipline as gloss.js/verb-endings.js -- app.js owns
 // the actual history.pushState/replaceState calls and the popstate listener.
-
-const MODE_VALUES = new Set(["build", "deconstruct"]);
 
 /**
  * Reads {mode, word, chain} out of a URLSearchParams-compatible search
@@ -37,9 +33,11 @@ export function readState(search) {
 	const params = new URLSearchParams(search);
 	const mode = params.get("mode");
 	const chainRaw = params.get("chain");
+	// Accept the old query-based format so existing links remain usable.
+	const word = params.get("w") ?? params.get("word") ?? "";
 	return {
-		mode: MODE_VALUES.has(mode) ? mode : "build",
-		word: params.get("word") ?? "",
+		mode: mode === "deconstruct" || params.has("w") ? "deconstruct" : "build",
+		word,
 		chain: chainRaw ? chainRaw.split(",").map((s) => s.trim()).filter(Boolean) : [],
 	};
 }
@@ -48,16 +46,27 @@ export function readState(search) {
  * Builds the query string (leading "?", or "" for entirely-default/empty
  * state) for {mode, word, chain}. Omits a param at its default/empty value
  * so an untouched app still links to a bare path, not a query string full
- * of defaults. Both `word` and `chain` are emitted when set, regardless of
- * `mode`, so switching tabs does not drop the other tab's content.
+ * of defaults. The active mode owns its state: Deconstruct uses the short
+ * `w` key, while Build uses `chain`; inactive-mode state is never emitted.
  * @param {{ mode?: string, word?: string, chain?: string[] }} state
  * @returns {string}
  */
 export function writeState({ mode, word, chain } = {}) {
 	const params = new URLSearchParams();
-	if (mode && mode !== "build") params.set("mode", mode);
-	if (word) params.set("word", word);
-	if (chain && chain.length > 0) params.set("chain", chain.join(","));
+	if (mode === "deconstruct") {
+		if (word) params.set("w", word);
+	} else if (chain && chain.length > 0) {
+		params.set("chain", chain.join(","));
+	}
 	const qs = params.toString();
 	return qs ? `?${qs}` : "";
+}
+
+/** Returns the canonical route, preserving a deployed site's base path. */
+export function routeForState(pathname = "/") {
+	const suffix = "/deconstruct/";
+	const base = pathname.endsWith(suffix)
+		? pathname.slice(0, -suffix.length)
+		: pathname.endsWith("/") ? pathname : `${pathname}/`;
+	return base || "/";
 }
