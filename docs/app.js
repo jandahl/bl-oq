@@ -403,7 +403,7 @@ function currentShareState() {
 async function copyShareLink() {
 	const url = location.href;
 	try {
-		await navigator.clipboard.writeText(url);
+		await window.navigator.clipboard.writeText(url);
 	} catch {
 		// Fallback for older / insecure contexts: select via prompt-less textarea.
 		const ta = document.createElement("textarea");
