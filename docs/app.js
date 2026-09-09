@@ -652,6 +652,10 @@ async function main() {
 	injectWorkspace();
 	window.addEventListener("resize", () => Blockly.svgResize(workspace));
 	window.addEventListener("orientationchange", () => Blockly.svgResize(workspace));
+	const resultsDetails = document.getElementById("results-details");
+	resultsDetails?.addEventListener("toggle", () => {
+		requestAnimationFrame(() => Blockly.svgResize(workspace));
+	});
 
 	setStatus(`Loaded ${presets.length} morphemes.`, "");
 
