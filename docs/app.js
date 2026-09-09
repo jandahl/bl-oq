@@ -402,8 +402,10 @@ function currentShareState() {
 
 async function copyShareLink() {
 	const url = location.href;
+	let ok = false;
 	try {
 		await window.navigator.clipboard.writeText(url);
+		ok = true;
 	} catch {
 		// Fallback for older / insecure contexts: select via prompt-less textarea.
 		const ta = document.createElement("textarea");
@@ -413,9 +415,10 @@ async function copyShareLink() {
 		ta.style.left = "-9999px";
 		document.body.appendChild(ta);
 		ta.select();
-		document.execCommand("copy");
+		ok = document.execCommand("copy");
 		ta.remove();
 	}
+	if (!ok) return;
 	copyLinkBtn.textContent = t("linkCopied");
 	window.setTimeout(() => {
 		copyLinkBtn.textContent = t("copyLink");
@@ -425,6 +428,20 @@ async function copyShareLink() {
 function clearCanvas() {
 	if (!workspace) return;
 	workspace.clear();
+	// Clearing the canvas must also invalidate share state: otherwise
+	// lastDeconstructWord / the word input keep w= in the URL, and a reload
+	// or copied link re-runs Deconstruct and repopulates the canvas.
+	lastDeconstructWord = "";
+	lastDeconstructSeq = null;
+	lastDeconstructBuilt = null;
+	lastDeconstructAlternatives = null;
+	lastDeconstructIds = null;
+	mode = "build";
+	setFieldValue(wordInput, "");
+	breakdownDiv.innerHTML = "";
+	breakdownSummaryMeta.textContent = "";
+	breakdownDetails.hidden = true;
+	updateReadingLine(null);
 	refreshBuild();
 	requestAnimationFrame(() => Blockly.svgResize(workspace));
 }
