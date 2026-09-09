@@ -16,6 +16,10 @@ async function openSettings(page) {
 	if (await page.locator("#display-panel").isHidden()) await page.click("#display-toggle");
 }
 
+async function closeSettings(page) {
+	if (await page.locator("#display-panel").isVisible()) await page.click("#display-toggle");
+}
+
 async function choose(page, group, value) {
 	if (group !== "#opt-lang") await openSettings(page);
 	await page.locator(`${group} [data-value="${value}"]`).click();
@@ -123,10 +127,11 @@ test("Deconstruct: oq CI worked examples open in a filterable modal", async ({ p
 });
 
 async function dragFirstFlyoutBlockIntoWorkspace(page, categoryLabelText) {
+	await closeSettings(page);
 	const category = page.locator('[role="treeitem"]').filter({ hasText: categoryLabelText }).first();
 	await category.click({ force: true });
-	await page.waitForTimeout(400);
 	const block = page.locator(".blocklyFlyout .blocklyDraggable").first();
+	await expect(block).toBeVisible({ timeout: 10_000 });
 	const box = await block.boundingBox();
 	if (!box) throw new Error("flyout block has no bounding box");
 	const workspaceBox = await page.locator("#blockly-div").boundingBox();
@@ -179,6 +184,7 @@ test("Build: block labels always show the real Kalaallisut spelling, and hide gr
 
 	await openSettings(page);
 	await page.click("#opt-show-ids");
+	await closeSettings(page);
 	await page.waitForTimeout(400);
 	await page.locator('[role="treeitem"]').first().click({ force: true });
 	await page.waitForTimeout(400);
@@ -402,12 +408,14 @@ test("Spelling-visibility mode: gloss-only and spelling-only each show exactly w
 	const stemCat = page.locator('[role="treeitem"]').filter({ hasText: "Stems — nouns" }).first();
 
 	await choose(page, "#opt-spelling", "gloss-only");
+	await closeSettings(page);
 	await stemCat.click({ force: true });
-	await page.waitForTimeout(400);
+	await expect(page.locator(".blocklyFlyout .blocklyDraggable text").first()).toBeVisible({ timeout: 10_000 });
 	const glossOnlyLabel = await page.locator(".blocklyFlyout .blocklyDraggable text").first().textContent();
 	expect(glossOnlyLabel).not.toContain(" — "); // "both" mode's only separator -- gloss-only never joins two parts
 
 	await choose(page, "#opt-spelling", "spelling-only");
+	await closeSettings(page);
 	await stemCat.click({ force: true });
 	await page.waitForTimeout(400);
 	const spellingOnlyLabel = await page.locator(".blocklyFlyout .blocklyDraggable text").first().textContent();
@@ -454,6 +462,7 @@ test("Build: palette Hide/Show actually hides the toolbox, and never throws (bl-
 });
 
 test("Build: filter narrows the toolbox and closes any already-open flyout (bl-oq-ly#9: a stale flyout used to keep showing unfiltered content)", async ({ page }) => {
+	await closeSettings(page);
 	await page.locator('[role="treeitem"]').filter({ hasText: "Derivational affixes" }).first().click({ force: true });
 	await page.waitForTimeout(400);
 	await expect(page.locator(".blocklyFlyout .blocklyDraggable").first()).toBeVisible();
