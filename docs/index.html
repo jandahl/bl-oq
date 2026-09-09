@@ -62,19 +62,14 @@
 	<main>
 		<section class="page-section analyze-section" aria-labelledby="analyze-heading">
 			<h2 id="analyze-heading" data-i18n="analyzeHeading">Analyze a word</h2>
-		<details id="breakdown-details" hidden>
-			<summary id="breakdown-summary">
-				<span class="disclosure-label">Morpheme chain</span>
-				<span id="breakdown-summary-meta" class="disclosure-meta"></span>
-			</summary>
-			<div id="breakdown"></div>
-		</details>
+			<details id="breakdown-details" hidden>
+				<summary id="breakdown-summary">
+					<span class="disclosure-label">Morpheme chain</span>
+					<span id="breakdown-summary-meta" class="disclosure-meta"></span>
+				</summary>
+				<div id="breakdown"></div>
+			</details>
 
-		<p id="reading-line" class="reading-line" hidden></p>
-
-		<section id="status" aria-live="polite">
-			<p id="status-line">Loading morpheme catalog…</p>
-		</section>
 		</section>
 
 		<section class="page-section build-section" aria-labelledby="build-heading">
@@ -116,6 +111,20 @@
 			<div id="blockly-div"></div>
 		</section>
 	</main>
+
+	<aside id="results-footer" class="results-footer" aria-label="Results">
+		<details id="results-details" open>
+			<summary id="results-summary">
+				<span class="disclosure-label">Results</span>
+			</summary>
+			<div id="results">
+				<p id="reading-line" class="reading-line" hidden></p>
+				<section id="status" aria-live="polite">
+					<p id="status-line">Loading morpheme catalog…</p>
+				</section>
+			</div>
+		</details>
+	</aside>
 
 	<dialog id="worked-examples-modal" aria-labelledby="worked-examples-heading">
 		<div class="modal-header">

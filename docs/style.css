@@ -185,12 +185,13 @@ h1 { margin: 0 0 0.2rem; font-size: 1.2rem; }
 .segmented [role="radio"]:focus-visible { position: relative; z-index: 1; }
 
 main {
-	padding: 0.75rem 1rem;
+	padding: 0.75rem 1rem 4rem;
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 	position: relative;
 }
+body:has(#results-details[open]) main { padding-bottom: 9rem; }
 .page-section { width: 100%; }
 /* Workshop is full-bleed within main: do not center-constrain analyze,
    build, or examples to a reading-column max-width — that left unused
@@ -207,10 +208,28 @@ main {
 }
 #breakdown-details[hidden] { display: none; }
 
+.results-footer {
+	position: fixed;
+	z-index: 100;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	max-height: min(14rem, 30vh);
+	border-top: 2px solid var(--accent);
+	background: var(--panel-bg);
+	box-shadow: 0 -0.35rem 1.2rem color-mix(in srgb, var(--fg) 12%, transparent);
+	isolation: isolate;
+}
+.results-footer #results-details > summary {
+	padding: 0.9rem max(1rem, env(safe-area-inset-right)) 0.9rem max(1rem, env(safe-area-inset-left));
+	min-height: 3.1rem;
+}
+
 /* Custom disclosure triangle so the fold is obvious: native <summary>
    markers are easy to miss once the row is restyled, and some engines
    drop them entirely when summary is a flex box. */
 #breakdown-details > summary,
+#results-details > summary,
 .alternative-breakdowns > summary {
 	display: flex;
 	align-items: center;
@@ -225,10 +244,13 @@ main {
 	min-height: 2.75rem;
 }
 #breakdown-details > summary::-webkit-details-marker,
+#results-details > summary::-webkit-details-marker,
 .alternative-breakdowns > summary::-webkit-details-marker { display: none; }
 #breakdown-details > summary::marker,
+#results-details > summary::marker,
 .alternative-breakdowns > summary::marker { content: ""; }
 #breakdown-details > summary::before,
+#results-details > summary::before,
 .alternative-breakdowns > summary::before {
 	content: "";
 	width: 0.45rem;
@@ -240,14 +262,17 @@ main {
 	transition: transform 0.15s ease;
 }
 #breakdown-details[open] > summary::before,
+#results-details[open] > summary::before,
 .alternative-breakdowns[open] > summary::before {
 	transform: rotate(45deg);
 }
 #breakdown-details > summary:hover,
+#results-details > summary:hover,
 .alternative-breakdowns > summary:hover {
 	background: color-mix(in srgb, var(--accent) 8%, var(--panel-bg));
 }
-#breakdown-details[open] > summary { border-bottom: 1px solid var(--border); }
+#breakdown-details[open] > summary,
+#results-details[open] > summary { border-bottom: 1px solid var(--border); }
 .disclosure-label { flex-shrink: 0; }
 .disclosure-meta {
 	flex: 1 1 auto;
@@ -260,6 +285,7 @@ main {
 }
 @media (prefers-reduced-motion: reduce) {
 	#breakdown-details > summary::before,
+	#results-details > summary::before,
 	.alternative-breakdowns > summary::before { transition: none; }
 }
 
@@ -402,11 +428,28 @@ main {
 	.breakdown-word { font-size: 1.3rem; }
 }
 
-#breakdown {
-	max-height: min(40vh, 360px);
-	overflow-y: auto;
-	padding: 1rem;
+#results {
+	display: block;
+	max-height: 0;
+	overflow: hidden;
+	padding: 0 1rem;
+	opacity: 0;
+	transform: translateY(-0.25rem);
+	transition: max-height 600ms ease,
+		opacity 600ms ease,
+		padding 600ms ease,
+		transform 600ms ease;
 }
+#results-details[open] > #results {
+	max-height: 10rem;
+	padding: 0.65rem 1rem;
+	opacity: 1;
+	transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+	#results { transition: none; }
+}
+#breakdown { padding: 1rem; }
 #breakdown:empty { display: none; }
 
 .breakdown-word {
@@ -499,11 +542,13 @@ main {
 
 .reading-line {
 	margin: 0;
-	padding: 0.5rem 0.9rem;
-	font-style: italic;
-	font-size: 0.9rem;
-	color: color-mix(in srgb, var(--fg) 75%, transparent);
-	border-left: 3px solid var(--accent);
+	padding: 0.6rem 0.9rem;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--panel-bg);
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	font-size: 1.05rem;
+	word-break: break-word;
 }
 .reading-line[hidden] { display: none; }
 

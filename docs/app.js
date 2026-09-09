@@ -550,9 +550,8 @@ function rerenderBreakdown() {
 	const n = primary.querySelectorAll(".breakdown-row").length;
 	const translation = primary.querySelector(".breakdown-translation")?.textContent;
 	breakdownSummaryMeta.textContent = translation ? `${n} · ${translation}` : String(n);
-	// Only auto-open the first time the panel appears (a new analysis hides
-	// it first). A later re-render — display-option toggle, etc. — must
-	// leave the learner's fold state alone, or collapsing it is a no-op.
+	// Only auto-open the first time the breakdown panel appears. A later
+	// re-render — display-option toggle, etc. — must leave its fold state alone.
 	const firstShow = breakdownDetails.hidden;
 	breakdownDetails.hidden = false;
 	if (firstShow) breakdownDetails.open = false;
