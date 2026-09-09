@@ -208,13 +208,19 @@ body:has(#results-details[open]) main { padding-bottom: 9rem; }
 }
 #breakdown-details[hidden] { display: none; }
 
+:root { --results-footer-height: 3.25rem; }
+body:has(#results-details[open]) { --results-footer-height: min(14rem, 30vh); }
+
 .results-footer {
 	position: fixed;
-	z-index: 100;
+	/* Below #blockly-div so the toolbox/flyout stay clickable and
+	   Playwright-visible; the reserved --results-footer-height keeps
+	   the canvas from sitting under this chrome. */
+	z-index: 40;
 	left: 0;
 	right: 0;
 	bottom: 0;
-	max-height: min(14rem, 30vh);
+	max-height: var(--results-footer-height);
 	border-top: 2px solid var(--accent);
 	background: var(--panel-bg);
 	box-shadow: 0 -0.35rem 1.2rem color-mix(in srgb, var(--fg) 12%, transparent);
@@ -305,9 +311,18 @@ body:has(#results-details[open]) main { padding-bottom: 9rem; }
    Blockly.Theme API (theme.js) rather than CSS, and kept in sync with this
    page's own theme by app.js's workspace.setTheme() calls — see theme.js's
    comment for why (Blockly doesn't read CSS custom properties). */
+.blocklyWidgetDiv,
+.blocklyDropDownDiv {
+	z-index: 200 !important;
+}
+
 #blockly-div {
-	height: min(70vh, 720px);
-	min-height: 320px;
+	position: relative;
+	z-index: 50;
+	/* Leave room for the fixed results footer so flyout blocks are not
+	   covered (e2e + real clicks). 12rem approximates header/examples chrome. */
+	height: min(70vh, calc(100dvh - var(--results-footer-height) - 12rem), 720px);
+	min-height: 280px;
 	width: 100%;
 	border: 1px solid var(--border);
 	border-radius: 6px;
