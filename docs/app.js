@@ -654,8 +654,7 @@ async function main() {
 	window.addEventListener("resize", () => Blockly.svgResize(workspace));
 	window.addEventListener("orientationchange", () => Blockly.svgResize(workspace));
 
-	const authNote = catalog.authoritative === false ? " (grammarian data is hand-authored, not yet dictionary-verified — see its own CLAUDE.md)" : "";
-	setStatus(`Loaded ${presets.length} morphemes.${authNote}`, "");
+	setStatus(`Loaded ${presets.length} morphemes.`, "");
 
 	if (!paletteVisible) {
 		paletteToggleBtn.textContent = t("paletteShow");

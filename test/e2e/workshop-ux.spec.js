@@ -21,7 +21,7 @@ test("Copy link writes the current share URL to the clipboard", async ({ page, c
 });
 
 test("Clear canvas empties the workspace back to the empty hint", async ({ page }) => {
-	await page.locator("#example-words [data-example-word=\"qimmeq\"]").click();
+	await page.locator("#example-words [data-example-word=\"qimmeqarpunga\"]").click();
 	await expect(page.locator("#status-line")).not.toContainText("Analyzing", { timeout: 30_000 });
 	await page.getByRole("button", { name: "Clear canvas" }).click();
 	await expect(page.locator("#status-line")).toContainText(/example|morpheme/i);
@@ -48,9 +48,9 @@ test("desktop Blockly uses a tall canvas, not a short 480px strip", async ({ pag
 });
 
 test("Clear canvas clears share state so reload stays empty", async ({ page }) => {
-	await page.locator("#example-words [data-example-word=\"qimmeq\"]").click();
+	await page.locator("#example-words [data-example-word=\"qimmeqarpunga\"]").click();
 	await expect(page.locator("#status-line")).not.toContainText("Analyzing", { timeout: 30_000 });
-	await expect(page).toHaveURL(/[?&](w=qimmeq|chain=)/);
+	await expect(page).toHaveURL(/[?&](w=qimmeqarpunga|chain=)/);
 	await page.getByRole("button", { name: "Clear canvas" }).click();
 	await expect(page.locator("#status-line")).toContainText(/example|morpheme/i);
 	await expect(page.locator("#word-input")).toHaveValue("");

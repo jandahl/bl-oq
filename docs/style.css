@@ -191,11 +191,10 @@ main {
 	gap: 0.5rem;
 	position: relative;
 }
-.page-section { width: 100%; max-width: 72rem; margin: 0 auto; }
-/* Build/Blockly is a workshop canvas: do not center-constrain it to the
-   reading-column max-width used by analyze/examples. On desktop that left
-   a narrow centered Blockly band with unused side gutters. */
-.page-section.build-section { max-width: none; }
+.page-section { width: 100%; }
+/* Workshop is full-bleed within main: do not center-constrain analyze,
+   build, or examples to a reading-column max-width — that left unused
+   side gutters on desktop for more than just Blockly. */
 .page-section > h2 { margin: 0; font-size: 1.05rem; }
 .analyze-section { display: grid; gap: 0.55rem; }
 .build-section { display: grid; gap: 0.45rem; padding-top: 0.35rem; border-top: 1px solid var(--border); }
@@ -572,4 +571,4 @@ footer {
 	font-size: 0.7rem;
 	color: color-mix(in srgb, var(--fg) 55%, transparent);
 }
-footer p { max-width: 72rem; margin: 0 auto; }
+footer p { margin: 0; }
