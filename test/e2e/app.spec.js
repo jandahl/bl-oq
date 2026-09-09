@@ -47,10 +47,9 @@ test.beforeEach(async ({ page }) => {
 	await expect(page.locator("#status-line")).toContainText("Loaded", { timeout: 20_000 });
 });
 
-test("catalog loads with a real morpheme count and surfaces the non-authoritative note", async ({ page }) => {
+test("catalog loads with a real morpheme count", async ({ page }) => {
 	const status = await page.textContent("#status-line");
-	expect(status).toMatch(/Loaded \d{3,} morphemes\./);
-	expect(status).toContain("hand-authored, not yet dictionary-verified");
+	expect(status).toMatch(/^Loaded \d{3,} morphemes\.$/);
 });
 
 test("display segmented controls support keyboard navigation", async ({ page }) => {
