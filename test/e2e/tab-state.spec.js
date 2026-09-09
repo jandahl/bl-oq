@@ -17,6 +17,8 @@ test("a finished analysis stays in the details panel while the canvas shows the 
 	await expect(page.locator("#primary-breakdown .breakdown-word")).toHaveText("qimmeqarpunga", { timeout: 20_000 });
 	await expect(page.locator("#word-input")).toHaveValue("qimmeqarpunga");
 	await expect(page.locator("#breakdown-details")).toBeVisible();
+	await expect(page.locator("#results-details")).toHaveAttribute("open", "");
+	await expect(page.locator("#results-summary")).toHaveText("Results");
 	await expect(page.locator("#blockly-div")).toBeVisible();
 	await expect(page.locator("#status-line")).toHaveText("qimmeqarpunga");
 	await expect.poll(() => page.evaluate(() => Blockly.getMainWorkspace().getAllBlocks(false).length)).toBeGreaterThan(0);
