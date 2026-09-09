@@ -91,13 +91,13 @@ test("Deconstruct: example words load into the analyzer", async ({ page }) => {
 	await expect(page.locator("#primary-breakdown .breakdown-word")).toHaveText("qimmeqarpunga", { timeout: 20_000 });
 });
 
-test("Deconstruct: examples cover noun, verb, affix, ending, enclitic, and transitive verb forms", async ({ page }) => {
-	const examples = page.locator("[data-example-word]");
+test("Deconstruct: examples are polymorphemic attested words across several phenomena", async ({ page }) => {
+	const examples = page.locator("#example-words [data-example-word]");
 	await expect(examples).toHaveCount(6);
 	const classes = await examples.evaluateAll((nodes) => nodes.map((node) => node.dataset.exampleClass));
 	expect(classes).toEqual([
-		"noun",
-		"verb",
+		"intransitive verb",
+		"intransitive verb",
 		"derivational affix",
 		"inflectional ending",
 		"enclitic",
@@ -105,6 +105,9 @@ test("Deconstruct: examples cover noun, verb, affix, ending, enclitic, and trans
 	]);
 	const words = await examples.evaluateAll((nodes) => nodes.map((node) => node.dataset.exampleWord));
 	expect(new Set(words).size).toBe(words.length);
+	// Bare single-stem demos (e.g. qimmeq) are not useful as Deconstruct examples.
+	expect(words).not.toContain("qimmeq");
+	for (const word of words) expect(word.length).toBeGreaterThan(6);
 });
 
 test("Deconstruct: oq CI worked examples open in a filterable modal", async ({ page }) => {
