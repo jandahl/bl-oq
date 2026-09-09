@@ -46,3 +46,20 @@ test("desktop Blockly uses a tall canvas, not a short 480px strip", async ({ pag
 	expect(box).toBeTruthy();
 	expect(box.height).toBeGreaterThan(480);
 });
+
+test("Clear canvas clears share state so reload stays empty", async ({ page }) => {
+	await page.locator("#example-words [data-example-word=\"qimmeq\"]").click();
+	await expect(page.locator("#status-line")).not.toContainText("Analyzing", { timeout: 30_000 });
+	await expect(page).toHaveURL(/[?&](w=qimmeq|chain=)/);
+	await page.getByRole("button", { name: "Clear canvas" }).click();
+	await expect(page.locator("#status-line")).toContainText(/example|morpheme/i);
+	await expect(page.locator("#word-input")).toHaveValue("");
+	await expect(page).not.toHaveURL(/[?&]w=/);
+	await expect(page).not.toHaveURL(/[?&]chain=/);
+	await page.reload();
+	await waitForCatalog(page);
+	await expect(page.locator("#word-input")).toHaveValue("");
+	await expect(page).not.toHaveURL(/[?&]w=/);
+	await expect(page).not.toHaveURL(/[?&]chain=/);
+	await expect(page.locator("#status-line")).toContainText(/Loaded|example|morpheme/i);
+});
