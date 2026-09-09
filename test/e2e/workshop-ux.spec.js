@@ -1,0 +1,65 @@
+// @ts-check
+import { test, expect } from "@playwright/test";
+
+async function waitForCatalog(page) {
+	await expect(page.locator("#status-line")).not.toContainText("Loading", { timeout: 30_000 });
+}
+
+test.beforeEach(async ({ page }) => {
+	await page.goto("/");
+	await waitForCatalog(page);
+});
+
+test("Copy link writes the current share URL to the clipboard", async ({ page, context }) => {
+	await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+	await page.locator("#example-words [data-example-word=\"qimmeqarpunga\"]").click();
+	await expect(page.locator("#status-line")).not.toContainText("Analyzing", { timeout: 30_000 });
+	await page.getByRole("button", { name: "Copy link" }).click();
+	await expect(page.getByRole("button", { name: "Copied" })).toBeVisible();
+	const text = await page.evaluate(() => window.navigator.clipboard.readText());
+	expect(text).toMatch(/[?&](w=qimmeqarpunga|chain=)/);
+});
+
+test("Clear canvas empties the workspace back to the empty hint", async ({ page }) => {
+	await page.locator("#example-words [data-example-word=\"qimmeq\"]").click();
+	await expect(page.locator("#status-line")).not.toContainText("Analyzing", { timeout: 30_000 });
+	await page.getByRole("button", { name: "Clear canvas" }).click();
+	await expect(page.locator("#status-line")).toContainText(/example|morpheme/i);
+});
+
+test("examples sit in the Build section above the Blockly canvas", async ({ page }) => {
+	const order = await page.evaluate(() => {
+		const build = document.querySelector(".build-section");
+		const examples = document.querySelector("#example-words");
+		const blockly = document.querySelector("#blockly-div");
+		if (!build || !examples || !blockly) return "missing";
+		if (!build.contains(examples) || !build.contains(blockly)) return "missing";
+		const pos = examples.compareDocumentPosition(blockly);
+		return (pos & 4)/* DOCUMENT_POSITION_FOLLOWING */ ? "examples-before-blockly" : "wrong-order";
+	});
+	expect(order).toBe("examples-before-blockly");
+});
+
+test("desktop Blockly uses a tall canvas, not a short 480px strip", async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 900 });
+	const box = await page.locator("#blockly-div").boundingBox();
+	expect(box).toBeTruthy();
+	expect(box.height).toBeGreaterThan(480);
+});
+
+test("Clear canvas clears share state so reload stays empty", async ({ page }) => {
+	await page.locator("#example-words [data-example-word=\"qimmeq\"]").click();
+	await expect(page.locator("#status-line")).not.toContainText("Analyzing", { timeout: 30_000 });
+	await expect(page).toHaveURL(/[?&](w=qimmeq|chain=)/);
+	await page.getByRole("button", { name: "Clear canvas" }).click();
+	await expect(page.locator("#status-line")).toContainText(/example|morpheme/i);
+	await expect(page.locator("#word-input")).toHaveValue("");
+	await expect(page).not.toHaveURL(/[?&]w=/);
+	await expect(page).not.toHaveURL(/[?&]chain=/);
+	await page.reload();
+	await waitForCatalog(page);
+	await expect(page.locator("#word-input")).toHaveValue("");
+	await expect(page).not.toHaveURL(/[?&]w=/);
+	await expect(page).not.toHaveURL(/[?&]chain=/);
+	await expect(page.locator("#status-line")).toContainText(/Loaded|example|morpheme/i);
+});

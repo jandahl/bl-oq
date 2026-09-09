@@ -281,11 +281,46 @@ main {
    page's own theme by app.js's workspace.setTheme() calls — see theme.js's
    comment for why (Blockly doesn't read CSS custom properties). */
 #blockly-div {
-	height: min(55vh, 480px);
-	min-height: 280px;
+	height: min(70vh, 720px);
+	min-height: 320px;
 	width: 100%;
 	border: 1px solid var(--border);
 	border-radius: 6px;
+}
+
+.build-heading-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.5rem 1rem;
+}
+.build-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.build-examples {
+	padding: 0.55rem 0.7rem;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--panel-bg);
+}
+.build-examples-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.4rem 0.75rem;
+}
+.build-examples-head h3 { margin: 0; font-size: 0.95rem; }
+.build-examples .section-instruction { margin: 0.25rem 0 0.45rem; }
+.build-examples .example-word-list { margin-bottom: 0; }
+#worked-examples-btn {
+	padding: 0.35rem 0.65rem;
+	border: 1px solid var(--border);
+	background: var(--bg);
+	color: var(--fg);
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.8rem;
+	touch-action: manipulation;
 }
 
 /* bl-oq-ly#20: on a phone-width viewport, Blockly's own toolbox tree sizes
@@ -352,6 +387,9 @@ main {
 		padding: 0.4rem 0.35rem;
 		font-size: 0.75rem;
 	}
+	.build-heading-row { align-items: stretch; }
+	.build-actions { width: 100%; }
+	.build-actions .theme-toggle { flex: 1 1 auto; min-height: 2.5rem; }
 	#blockly-div {
 		height: min(58dvh, 28rem);
 		min-height: 16rem;

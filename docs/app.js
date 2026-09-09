@@ -95,6 +95,8 @@ const themeToggleBtn = document.getElementById("theme-toggle");
 const displayToggleBtn = document.getElementById("display-toggle");
 const displayPanel = document.getElementById("display-panel");
 const paletteToggleBtn = document.getElementById("palette-toggle");
+const copyLinkBtn = document.getElementById("copy-link-btn");
+const clearCanvasBtn = document.getElementById("clear-canvas-btn");
 const filterWrap = document.getElementById("morpheme-filter-wrap");
 const filterInput = bindClearable(
 	document.getElementById("morpheme-filter"),
@@ -397,6 +399,53 @@ function currentShareState() {
 	};
 }
 
+
+async function copyShareLink() {
+	const url = location.href;
+	let ok = false;
+	try {
+		await window.navigator.clipboard.writeText(url);
+		ok = true;
+	} catch {
+		// Fallback for older / insecure contexts: select via prompt-less textarea.
+		const ta = document.createElement("textarea");
+		ta.value = url;
+		ta.setAttribute("readonly", "");
+		ta.style.position = "fixed";
+		ta.style.left = "-9999px";
+		document.body.appendChild(ta);
+		ta.select();
+		ok = document.execCommand("copy");
+		ta.remove();
+	}
+	if (!ok) return;
+	copyLinkBtn.textContent = t("linkCopied");
+	window.setTimeout(() => {
+		copyLinkBtn.textContent = t("copyLink");
+	}, 1200);
+}
+
+function clearCanvas() {
+	if (!workspace) return;
+	workspace.clear();
+	// Clearing the canvas must also invalidate share state: otherwise
+	// lastDeconstructWord / the word input keep w= in the URL, and a reload
+	// or copied link re-runs Deconstruct and repopulates the canvas.
+	lastDeconstructWord = "";
+	lastDeconstructSeq = null;
+	lastDeconstructBuilt = null;
+	lastDeconstructAlternatives = null;
+	lastDeconstructIds = null;
+	mode = "build";
+	setFieldValue(wordInput, "");
+	breakdownDiv.innerHTML = "";
+	breakdownSummaryMeta.textContent = "";
+	breakdownDetails.hidden = true;
+	updateReadingLine(null);
+	refreshBuild();
+	requestAnimationFrame(() => Blockly.svgResize(workspace));
+}
+
 function syncURL({ push = false } = {}) {
 	const state = currentShareState();
 	const url = routeForState(location.pathname) + writeState(state) + location.hash;
@@ -454,7 +503,7 @@ function refreshBuild() {
 	syncURL({ push: false });
 	const chains = topLevelChains(workspace);
 	if (chains.length === 0) {
-		setStatus("Drag a morpheme block in to begin.", "");
+		setStatus(t("emptyCanvasHint"), "");
 		updateReadingLine(null);
 		return;
 	}
@@ -631,6 +680,8 @@ async function main() {
 		selectExample(button.dataset.exampleWord);
 	});
 
+	copyLinkBtn.addEventListener("click", () => { copyShareLink(); });
+	clearCanvasBtn.addEventListener("click", () => { clearCanvas(); });
 	paletteToggleBtn.addEventListener("click", () => {
 		paletteVisible = !paletteVisible;
 		paletteToggleBtn.textContent = t(paletteVisible ? "paletteHide" : "paletteShow");
