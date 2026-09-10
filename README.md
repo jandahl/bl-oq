@@ -261,12 +261,14 @@ concern that belongs in oq) as Blockly connection checks.
   **The `jandahl/oq` source repo is private**, so a commit-pinned CDN URL
   (jsDelivr/raw.githubusercontent against the repo) is not reachable from a
   browser at all — `oq-api.js` imports the published package entry point
-  `https://jandahl.github.io/oq-api/api/v0.1.4/public-api.js`. The module's
-  separate `API_VERSION` currently reports `0.1.4`. Treat a broken build as a cue to inspect
+  `https://api.oq.gl/api/v0.1-latest/public-api.js`. The module's separate
+  `API_VERSION` reports the deployed API version. Treat a broken build as a cue to inspect
   the published package contract and its upstream data source, not
   necessarily as a bug in this repo.
-- **Morpheme catalog**: fetched at runtime from oq's own
-  `GRAMMAR_MORPHEMES_URL`, which points at
+- **Morpheme catalog**: fetched at runtime from the grammarian Cloudflare Pages
+  deployment (`https://grammarian.oq.gl/grammar/morphemes.json`), with the
+  GitHub Pages export retained as a temporary fallback, and converted through oq's own
+  merge logic. The fallback points at
   [`jandahl-custom-KAL-grammarian`](https://github.com/jandahl/jandahl-custom-KAL-grammarian)'s
   published `morphemes.json`. That data is **hand-authored and not yet
   dictionary-verified** (`meta.authoritative: false` — see that repo's own

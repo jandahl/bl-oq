@@ -3,7 +3,14 @@
 // jandahl-custom-KAL-grammarian's CLAUDE.md — the exported JSON always
 // carries meta.authoritative: false, which we surface to the user as-is
 // rather than hiding it.
-import { mergeMorphemeSources, GRAMMAR_MORPHEMES_URL } from "./oq-api.js";
+import { mergeMorphemeSources } from "./oq-api.js";
+
+// Prefer the Cloudflare Pages deployment, but retain the GitHub Pages copy as
+// a temporary fallback while the new host's CORS and bot-access policy settles.
+const GRAMMAR_MORPHEME_URLS = [
+	"https://grammarian.oq.gl/grammar/morphemes.json",
+	"https://jandahl.github.io/jandahl-custom-KAL-grammarian/grammar/morphemes.json",
+];
 
 /**
  * @returns {Promise<{ presets: any[], authoritative: boolean|undefined, meta: any }>}
@@ -12,9 +19,19 @@ export async function loadCatalog() {
 	// Revalidate the live catalog so a Pages/CDN cached response cannot hide a
 	// newly published grammarian export. Unchanged bytes remain cacheable via
 	// the server's validators; only a changed catalog is downloaded.
-	const res = await fetch(GRAMMAR_MORPHEMES_URL, { cache: "no-cache" });
-	if (!res.ok) throw new Error(`morpheme catalog fetch failed: ${res.status}`);
-	const value = await res.json();
+	let value;
+	const failures = [];
+	for (const url of GRAMMAR_MORPHEME_URLS) {
+		try {
+			const res = await fetch(url, { cache: "no-cache" });
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			value = await res.json();
+			break;
+		} catch (error) {
+			failures.push(`${url}: ${error.message}`);
+		}
+	}
+	if (!value) throw new Error(`morpheme catalog fetch failed (${failures.join("; ")})`);
 	const { presets, anyOk, failed } = mergeMorphemeSources(
 		[{ status: "fulfilled", value }],
 		[{ buildable: true, source: "grammarian" }],
