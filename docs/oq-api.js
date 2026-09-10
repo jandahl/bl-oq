@@ -7,12 +7,9 @@
 // or drop any export"), so which deployment this points at is a live,
 // tracked decision — see README.md for the current choice and why.
 //
-// Point at the versioned Pages distribution rather than an unversioned
-// deployment tracking oq's development branch. The published package path
-// is v0.1-latest; its concrete API_VERSION is reported separately by oq itself.
-// This deployment refreshes the rolling alias after oq-api 0.1.3; the URL
-// deliberately stays unpinned so later compatible patches need no code PR.
-const OQ_API_URL = "https://jandahl.github.io/oq-api/api/v0.1.4/public-api.js";
+// Use the current oq API deployment; its concrete API_VERSION is reported
+// separately by oq itself.
+const OQ_API_URL = "https://api.oq.gl/api/v0.1-latest/public-api.js";
 
 export const {
 	buildWord,
