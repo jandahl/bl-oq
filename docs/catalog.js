@@ -3,14 +3,7 @@
 // jandahl-custom-KAL-grammarian's CLAUDE.md — the exported JSON always
 // carries meta.authoritative: false, which we surface to the user as-is
 // rather than hiding it.
-import { mergeMorphemeSources } from "./oq-api.js";
-
-// Prefer the Cloudflare Pages deployment, but retain the GitHub Pages copy as
-// a temporary fallback while the new host's CORS and bot-access policy settles.
-const GRAMMAR_MORPHEME_URLS = [
-	"https://grammarian.oq.gl/grammar/morphemes.json",
-	"https://jandahl.github.io/jandahl-custom-KAL-grammarian/grammar/morphemes.json",
-];
+import { mergeMorphemeSources, GRAMMAR_MORPHEMES_URL } from "./oq-api.js";
 
 /**
  * @returns {Promise<{ presets: any[], authoritative: boolean|undefined, meta: any }>}
@@ -21,7 +14,7 @@ export async function loadCatalog() {
 	// the server's validators; only a changed catalog is downloaded.
 	let value;
 	const failures = [];
-	for (const url of GRAMMAR_MORPHEME_URLS) {
+	for (const url of [GRAMMAR_MORPHEMES_URL]) {
 		try {
 			const res = await fetch(url, { cache: "no-cache" });
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
