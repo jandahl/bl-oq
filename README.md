@@ -261,14 +261,17 @@ concern that belongs in oq) as Blockly connection checks.
   **The `jandahl/oq` source repo is private**, so a commit-pinned CDN URL
   (jsDelivr/raw.githubusercontent against the repo) is not reachable from a
   browser at all — `oq-api.js` imports the published package entry point
-  `https://api.oq.gl/api/v0.1-latest/public-api.js`. The module's separate
-  `API_VERSION` reports the deployed API version. Treat a broken build as a cue to inspect
+  `https://api.oq.gl/api/v0.1.6/public-api.js`. The module's separate
+  `API_VERSION` reports the deployed API version, and its exported
+  `GRAMMAR_MORPHEMES_URL` identifies the matching catalog. Treat a broken build as a cue to inspect
   the published package contract and its upstream data source, not
   necessarily as a bug in this repo.
-- **Morpheme catalog**: fetched at runtime from the grammarian Cloudflare Pages
-  deployment (`https://grammarian.oq.gl/grammar/morphemes.json`), with the
-  GitHub Pages export retained as a temporary fallback, and converted through oq's own
-  merge logic. The fallback points at
+- **Morpheme catalog**: fetched at runtime from the version-pinned URL exported
+  by oq-api (currently grammarian's ID-first `v2` catalog), and converted through oq's own
+  merge logic. This keeps the API and catalog on a compatible release pair;
+  the client does not combine independently rolling engine and catalog URLs. The
+  catalog's GitHub Pages mirror can be restored as a fallback only when it is
+  pinned to the same artifact revision. The source repository is
   [`jandahl-custom-KAL-grammarian`](https://github.com/jandahl/jandahl-custom-KAL-grammarian)'s
   published `morphemes.json`. That data is **hand-authored and not yet
   dictionary-verified** (`meta.authoritative: false` — see that repo's own

@@ -7,9 +7,10 @@
 // or drop any export"), so which deployment this points at is a live,
 // tracked decision — see README.md for the current choice and why.
 //
-// Use the current oq API deployment; its concrete API_VERSION is reported
-// separately by oq itself.
-const OQ_API_URL = "https://api.oq.gl/api/v0.1-latest/public-api.js";
+// Pin the engine in production. oq-api's exported GRAMMAR_MORPHEMES_URL is
+// the compatibility boundary for the matching grammarian catalog; consumers
+// must not pair a rolling API with an independently rolling legacy catalog.
+const OQ_API_URL = "https://api.oq.gl/api/v0.1.6/public-api.js";
 
 export const {
 	buildWord,
